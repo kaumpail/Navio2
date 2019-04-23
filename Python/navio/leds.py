@@ -1,6 +1,7 @@
 ON = 0
 OFF = 1
 
+
 class Pin():
     def __init__(self, folder_name):
         self.pin = folder_name
@@ -8,6 +9,7 @@ class Pin():
     def write(self, value):
         with open("/sys/class/leds/%s/brightness" % self.pin, "w") as value_file:
             value_file.write(str(value))
+
 
 class Led():
 

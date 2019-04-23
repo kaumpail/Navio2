@@ -8,8 +8,10 @@ Released under GNU GPL version 3 or later
 
 import struct
 from datetime import datetime
-import time, os
+import time
+import os
 import sys
+import signal
 
 # specify Python version
 if sys.version_info[0] < 3: # we're on python 2.x.x
@@ -164,11 +166,33 @@ RESET_HW_GRACEFUL   = 4
 RESET_GPS_STOP      = 8
 RESET_GPS_START     = 9
 
+
 class UBloxError(Exception):
     '''Ublox error class'''
     def __init__(self, msg):
         Exception.__init__(self, msg)
         self.message = msg
+
+
+class TimeoutError(Exception):
+    pass
+
+
+class Timeout:
+    def __init__(self, seconds=1, msg='Timeout'):
+        self.seconds = seconds
+        self.msg = msg
+
+    def handle_timeout(self, signum, frame):
+        raise TimeoutError(self.msg)
+
+    def __enter__(self):
+        signal.signal(signal.SIGALRM, self.handle_timeout)
+        signal.alarm(self.seconds)
+
+    def __exit__(self, type, value, traceback):
+        signal.alarm(0)
+
 
 class UBloxAttrDict(dict):
     '''allow dictionary members as attributes'''
@@ -182,20 +206,24 @@ class UBloxAttrDict(dict):
             raise AttributeError(name)
 
     def __setattr__(self, name, value):
-        if self.__dict__.has_key(name):
+        if self.__dict__. has_key(name):
             # allow set on normal attributes
             dict.__setattr__(self, name, value)
         else:
             self.__setitem__(name, value)
 
+
 def ArrayParse(field):
     '''parse an array descriptor'''
     arridx = field.find('[')
     if arridx == -1:
-        return (field, -1)
+        return field, -1
+
     alen = int(field[arridx+1:-1])
     fieldname = field[:arridx]
-    return (fieldname, alen)
+
+    return fieldname, alen
+
 
 class UBloxDescriptor:
     '''class used to describe the layout of a UBlox message'''
@@ -576,7 +604,7 @@ class UBloxMessage:
     def pack(self):
         '''pack a message'''
         if not self.valid():
-            raise UbloxError('INVALID MESSAGE')
+            raise UBloxError('INVALID MESSAGE')
         type = self.msg_type()
         if not type in msg_types:
             raise UBloxError('Unknown message %s' % str(type))
@@ -585,7 +613,7 @@ class UBloxMessage:
     def name(self):
         '''return the short string name for a message'''
         if not self.valid():
-            raise UbloxError('INVALID MESSAGE')
+            raise UBloxError('INVALID MESSAGE')
         type = self.msg_type()
         if not type in msg_types:
             raise UBloxError('Unknown message %s length=%u' % (str(type), len(self._buf)))
@@ -980,19 +1008,3 @@ class UBlox:
         ''' Reset the module for hot/warm/cold start'''
         payload = struct.pack('<HBB', set, mode, 0)
         self.send_message(CLASS_CFG, MSG_CFG_RST, payload)
-
-class TimeoutError(Exception):
-    pass
-
-import signal
-class Timeout:
-    def __init__(self, seconds=1, msg='Timeout'):
-        self.seconds = seconds
-        self.msg = msg
-    def handle_timeout(self, signum, frame):
-        raise TimeoutError(self.msg)
-    def __enter__(self):
-        signal.signal(signal.SIGALRM, self.handle_timeout)
-        signal.alarm(self.seconds)
-    def __exit__(self, type, value, traceback):
-        signal.alarm(0)

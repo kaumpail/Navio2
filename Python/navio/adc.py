@@ -1,5 +1,6 @@
 import os.path
 
+
 class ADC():
     SYSFS_ADC_PATH_BASE = "/sys/kernel/rcio/adc/"
     channel_count = 6
@@ -15,4 +16,3 @@ class ADC():
         value = self.channels[ch].read()
         position = self.channels[ch].seek(0, 0)
         return float(value[:-1])
-        

@@ -290,7 +290,7 @@ class MPU9250:
 
     def testConnection(self):
         response = self.ReadReg(self.__MPUREG_WHOAMI)
-        if (response == 0x71):
+        if response == 0x71:
             return True
         else:
             return False
