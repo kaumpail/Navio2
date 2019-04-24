@@ -177,7 +177,7 @@ class LSM9DS1:
     __READ_FLAG = 0x80
     __MULTIPLE_READ = 0x40
 
-    def __init__(self, spi_bus_number = 0):
+    def __init__(self, spi_bus_number=0):
         self.bus = spidev.SpiDev()
         self.spi_bus_number = spi_bus_number
         self.gyro_scale = None
@@ -195,7 +195,7 @@ class LSM9DS1:
     def testConnection(self):
         responseXG = self.readReg(self.__DEVICE_ACC_GYRO, self.__LSM9DS1XG_WHO_AM_I)
         responseM =  self.readReg(self.__DEVICE_MAGNETOMETER, self.__LSM9DS1M_WHO_AM_I)
-        if (responseXG == self.__WHO_AM_I_ACC_GYRO and responseM == self.__WHO_AM_I_MAG):
+        if responseXG == self.__WHO_AM_I_ACC_GYRO and responseM == self.__WHO_AM_I_MAG:
             return True
         return False
 
@@ -218,7 +218,7 @@ class LSM9DS1:
         tx = [0] * (length + 1)
 
         tx[0] = reg_address | self.__READ_FLAG
-        if dev_number==self.__DEVICE_MAGNETOMETER:
+        if dev_number == self.__DEVICE_MAGNETOMETER:
             tx[0] |= self.__MULTIPLE_READ
 
         rx = self.bus.xfer2(tx)
@@ -246,46 +246,45 @@ class LSM9DS1:
         # continuous conversion mode
         self.writeReg(self.__DEVICE_MAGNETOMETER, self.__LSM9DS1M_CTRL_REG3_M, self.__BITS_MD_CONTINUOUS)
         self.writeReg(self.__DEVICE_MAGNETOMETER, self.__LSM9DS1M_CTRL_REG4_M, self.__BITS_OMZ_HIGH)
-        self.writeReg(self.__DEVICE_MAGNETOMETER, self.__LSM9DS1M_CTRL_REG5_M, 0x00 )
+        self.writeReg(self.__DEVICE_MAGNETOMETER, self.__LSM9DS1M_CTRL_REG5_M, 0x00)
         time.sleep(0.1)
 
         self.set_gyro_scale(self.__BITS_FS_G_2000DPS)
         self.set_acc_scale(self.__BITS_FS_XL_16G)
         self.set_mag_scale(self.__BITS_FS_M_16Gs)
 
-
     def set_gyro_scale(self, scale):
         reg = self.__BITS_FS_G_MASK & self.readReg(self.__DEVICE_ACC_GYRO, self.__LSM9DS1XG_CTRL_REG1_G)
-        self.writeReg(self.__DEVICE_ACC_GYRO, self.__LSM9DS1XG_CTRL_REG1_G,reg | scale)
-        if (scale == self.__BITS_FS_G_245DPS):
+        self.writeReg(self.__DEVICE_ACC_GYRO, self.__LSM9DS1XG_CTRL_REG1_G, reg | scale)
+        if scale == self.__BITS_FS_G_245DPS:
             self.gyro_scale = 0.00875
-        if (scale == self.__BITS_FS_G_500DPS):
+        if scale == self.__BITS_FS_G_500DPS:
             self.gyro_scale = 0.0175
-        if (scale == self.__BITS_FS_G_2000DPS):
+        if scale == self.__BITS_FS_G_2000DPS:
             self.gyro_scale = 0.07
 
     def set_acc_scale(self, scale):
         reg = self.__BITS_FS_XL_MASK & self.readReg(self.__DEVICE_ACC_GYRO, self.__LSM9DS1XG_CTRL_REG6_XL)
         self.writeReg(self.__DEVICE_ACC_GYRO, self.__LSM9DS1XG_CTRL_REG6_XL, reg | scale)
-        if (scale == self.__BITS_FS_XL_2G):
+        if scale == self.__BITS_FS_XL_2G:
             self.acc_scale = 0.000061
-        if (scale == self.__BITS_FS_XL_4G):
+        if scale == self.__BITS_FS_XL_4G:
             self.acc_scale = 0.000122
-        if (scale == self.__BITS_FS_XL_8G):
+        if scale == self.__BITS_FS_XL_8G:
             self.acc_scale = 0.000244
-        if (scale == self.__BITS_FS_XL_16G):
+        if scale == self.__BITS_FS_XL_16G:
             self.acc_scale = 0.000732
 
     def set_mag_scale(self, scale):
         reg = self.__BITS_FS_M_MASK & self.readReg(self.__DEVICE_MAGNETOMETER, self.__LSM9DS1M_CTRL_REG2_M)
         self.writeReg(self.__DEVICE_MAGNETOMETER, self.__LSM9DS1M_CTRL_REG2_M, reg | scale)
-        if (scale == self.__BITS_FS_M_4Gs):
+        if scale == self.__BITS_FS_M_4Gs:
             self.mag_scale = 0.00014
-        if (scale == self.__BITS_FS_M_8Gs):
+        if scale == self.__BITS_FS_M_8Gs:
             self.mag_scale = 0.00029
-        if (scale == self.__BITS_FS_M_12Gs):
+        if scale == self.__BITS_FS_M_12Gs:
             self.mag_scale = 0.00043
-        if (scale == self.__BITS_FS_M_16Gs):
+        if scale == self.__BITS_FS_M_16Gs:
             self.mag_scale = 0.00058
 
     def read_acc(self):

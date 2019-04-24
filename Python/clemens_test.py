@@ -3,8 +3,14 @@
 import spidev
 import time
 import sys
+import struct
+import numpy as np
 from navio.mpu9250 import MPU9250
 from navio.lsm9ds1 import LSM9DS1
+from navio import ublox
+
+
+UPDATE_RATE = 50.0    # Update Rate in Hz
 
 # Initialize sensors
 mpu = MPU9250()
@@ -20,15 +26,71 @@ else:
 
 t_s = time.time()
 
-with open('testrun.bin', 'w') as dat:
-    dat.write('t[s], mpu_accel, mpu_gyro, mpu_magn, lsm_accel, lsm_gyro, lsm_magn\n')
+# GNSS
+ubl = ublox.UBlox("spi:0.0", baudrate=5000000, timeout=2)
+
+ubl.configure_poll_port()
+ubl.configure_poll(ublox.CLASS_CFG, ublox.MSG_CFG_USB)
+# ubl.configure_poll(navio.ublox.CLASS_MON, navio.ublox.MSG_MON_HW)
+
+ubl.configure_port(port=ublox.PORT_SERIAL1, inMask=1, outMask=0)
+ubl.configure_port(port=ublox.PORT_USB, inMask=1, outMask=1)
+ubl.configure_port(port=ublox.PORT_SERIAL2, inMask=1, outMask=0)
+ubl.configure_poll_port()
+ubl.configure_poll_port(ublox.PORT_SERIAL1)
+ubl.configure_poll_port(ublox.PORT_SERIAL2)
+ubl.configure_poll_port(ublox.PORT_USB)
+ubl.configure_solution_rate(rate_ms=1000)
+
+ubl.set_preferred_dynamic_model(None)
+ubl.set_preferred_usePPP(None)
+
+ubl.configure_message_rate(ublox.CLASS_NAV, ublox.MSG_NAV_POSLLH, 1)
+ubl.configure_message_rate(ublox.CLASS_NAV, ublox.MSG_NAV_PVT, 1)
+ubl.configure_message_rate(ublox.CLASS_NAV, ublox.MSG_NAV_STATUS, 1)
+ubl.configure_message_rate(ublox.CLASS_NAV, ublox.MSG_NAV_SOL, 1)
+ubl.configure_message_rate(ublox.CLASS_NAV, ublox.MSG_NAV_VELNED, 1)
+ubl.configure_message_rate(ublox.CLASS_NAV, ublox.MSG_NAV_SVINFO, 1)
+ubl.configure_message_rate(ublox.CLASS_NAV, ublox.MSG_NAV_VELECEF, 1)
+ubl.configure_message_rate(ublox.CLASS_NAV, ublox.MSG_NAV_POSECEF, 1)
+ubl.configure_message_rate(ublox.CLASS_RXM, ublox.MSG_RXM_RAW, 1)
+ubl.configure_message_rate(ublox.CLASS_RXM, ublox.MSG_RXM_SFRB, 1)
+ubl.configure_message_rate(ublox.CLASS_RXM, ublox.MSG_RXM_SVSI, 1)
+ubl.configure_message_rate(ublox.CLASS_RXM, ublox.MSG_RXM_ALM, 1)
+ubl.configure_message_rate(ublox.CLASS_RXM, ublox.MSG_RXM_EPH, 1)
+ubl.configure_message_rate(ublox.CLASS_NAV, ublox.MSG_NAV_TIMEGPS, 5)
+ubl.configure_message_rate(ublox.CLASS_NAV, ublox.MSG_NAV_CLOCK, 5)
+# ubl.configure_message_rate(ublox.CLASS_NAV, ublox.MSG_NAV_DGPS, 5)
+
+with open('testrun.bin', 'w+b') as dat:
+    dat.write(b't[s], mpu_accel_1, mpu_accel_2, mpu_accel_3, mpu_gyro_1, mpu_gyro_2, mpu_gyro_3, '
+              b'mpu_magn_1, mpu_magn_2, mpu_magn_3, '
+              b'lsm_accel_1, lsm_accel_2, lsm_accel_3, lsm_gyro_1, lsm_gyro_2, lsm_gyro_3, '
+              b'lsm_magn_1, lsm_magn_2, lsm_magn_3, gnss\n')
     while True:
         t_a = time.time() - t_s
         mpudata_a, mpudata_g, mpudata_m = mpu.getMotion9()
         lsmdata_a, lsmdata_g, lsmdata_m = lsm.getMotion9()
 
-	data ="{}, {}, {}, {}, {}, {}, {}\n".format(t_a, mpudata_a, mpudata_g, mpudata_m, lsmdata_a, lsmdata_g, lsmdata_m).replace("[", "").replace("]","")
-	print(data)
-        #dat.write(data)
-	time.sleep(0.001)
+        # GNSS
+        msg = ubl.receive_message()
+        if msg is None:
+            if opts.reopen:
+                ubl.close()
+                ubl = ublox.UBlox("spi:0.0", baudrate=5000000, timeout=2)
+                continue
+            print(empty)
+            break
+        if msg.name() == "NAV_POSLLH":
+            outstr = str(msg).split(",")[1:]
+            outstr = "".join(outstr)
+            print(outstr)
+        elif msg.name() == "NAV_STATUS":
+            outstr = str(msg).split(",")[1:2]
+            outstr = "".join(outstr)
+            print(outstr)
 
+        data = np.concatenate(t_a, mpudata_a, mpudata_g, mpudata_m, lsmdata_a, lsmdata_g, lsmdata_m, outstr)
+
+        dat.write(struct.pack('{}d'.format(len(data)), *data))
+        time.sleep(1.0/UPDATE_RATE)

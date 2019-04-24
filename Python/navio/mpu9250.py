@@ -230,9 +230,9 @@ class MPU9250:
 
     __MPU9250T_85degC   = (0.002995177763) # 0.002995177763 degC/LSB
 
-    __Magnetometer_Sensitivity_Scale_Factor = (0.15)
+    __Magnetometer_Sensitivity_Scale_Factor = 0.15
 
-    def __init__(self, spi_bus_number = 0, spi_dev_number = 1):
+    def __init__(self, spi_bus_number=0, spi_dev_number=1):
         self.bus = spidev.SpiDev()
         self.spi_bus_number = spi_bus_number
         self.spi_dev_number = spi_dev_number
@@ -442,6 +442,13 @@ class MPU9250:
         for i in range(0, 3):
             data = self.byte_to_float(response[i*2:i*2+2])
             self.accelerometer_data[i] = self.G_SI*data/self.acc_divider
+
+    def read_acc_raw(self):
+        response = self.ReadRegs(self.__MPUREG_ACCEL_XOUT_H, 6)
+
+        for i in range(0, 3):
+            data = self.byte_to_float(response[i*2:i*2+2])
+            self.accelerometer_data[i] = self.G_SI*data
 
 # -----------------------------------------------------------------------------------------------
 #                                 READ GYROSCOPE
