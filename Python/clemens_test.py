@@ -62,11 +62,11 @@ ubl.configure_message_rate(ublox.CLASS_NAV, ublox.MSG_NAV_TIMEGPS, 5)
 ubl.configure_message_rate(ublox.CLASS_NAV, ublox.MSG_NAV_CLOCK, 5)
 # ubl.configure_message_rate(ublox.CLASS_NAV, ublox.MSG_NAV_DGPS, 5)
 
-with open('testrun.bin', 'w+b') as dat:
-    dat.write(b't[s], mpu_accel_1, mpu_accel_2, mpu_accel_3, mpu_gyro_1, mpu_gyro_2, mpu_gyro_3, '
-              b'mpu_magn_1, mpu_magn_2, mpu_magn_3, '
-              b'lsm_accel_1, lsm_accel_2, lsm_accel_3, lsm_gyro_1, lsm_gyro_2, lsm_gyro_3, '
-              b'lsm_magn_1, lsm_magn_2, lsm_magn_3, gnss\n')
+with open('testrun.bin', 'w') as dat:
+    dat.write('t[s], mpu_accel_1, mpu_accel_2, mpu_accel_3, mpu_gyro_1, mpu_gyro_2, mpu_gyro_3, '
+              'mpu_magn_1, mpu_magn_2, mpu_magn_3, '
+              'lsm_accel_1, lsm_accel_2, lsm_accel_3, lsm_gyro_1, lsm_gyro_2, lsm_gyro_3, '
+              'lsm_magn_1, lsm_magn_2, lsm_magn_3, gnss\n')
     while True:
         t_a = time.time() - t_s
         mpudata_a, mpudata_g, mpudata_m = mpu.getMotion9()
@@ -92,5 +92,5 @@ with open('testrun.bin', 'w+b') as dat:
 
         data = np.concatenate(t_a, mpudata_a, mpudata_g, mpudata_m, lsmdata_a, lsmdata_g, lsmdata_m, outstr)
 
-        dat.write(struct.pack('{}d'.format(len(data)), *data))
+        dat.write(data)
         time.sleep(1.0/UPDATE_RATE)
