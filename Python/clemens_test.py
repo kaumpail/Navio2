@@ -109,7 +109,7 @@ with open('/home/pi/Navio2/Python/testrun_{}_IMU.txt'.format(fileending), 'w') a
                 outstr = str(msg).split(",")[1:2]
                 outstr = "".join(outstr)
                 print(outstr)
-            dat_gnss.write(str(t_a) + outstr)
+            dat_gnss.write(str(t_a) + outstr + "\n")
 
         data = [t_a] + mpudata_a + mpudata_g + mpudata_m + lsmdata_a + lsmdata_g + lsmdata_m
 
