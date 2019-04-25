@@ -17,10 +17,10 @@ from navio.ms5611 import MS5611
 # Initialize sensors
 mpu = MPU9250()
 lsm = LSM9DS1()
-#baro = MS5611
+baro = MS5611()
 mpu.initialize()
 lsm.initialize()
-#baro.initialize()
+baro.initialize()
 
 # Test connection:
 if mpu.testConnection() and lsm.testConnection():
@@ -78,15 +78,21 @@ with open('/home/pi/Navio2/Python/testrun_{}_IMU.txt'.format(fileending), 'w') a
     dat_imu.write('t[s], mpu_accel_1, mpu_accel_2, mpu_accel_3, mpu_gyro_1, mpu_gyro_2, mpu_gyro_3, '
                   'mpu_magn_1, mpu_magn_2, mpu_magn_3, '
                   'lsm_accel_1, lsm_accel_2, lsm_accel_3, lsm_gyro_1, lsm_gyro_2, lsm_gyro_3, '
-                  'lsm_magn_1, lsm_magn_2, lsm_magn_3\n')
+                  'lsm_magn_1, lsm_magn_2, lsm_magn_3, pressure, temp\n')
     dat_gnss.write('t[s], gnss\n')
 
     t_l = 0.0
     while True:
         t_a = time.time() - t_s
 
+        baro.refreshPressure()
+        baro.refreshTemperature()
         mpudata_a, mpudata_g, mpudata_m = mpu.getMotion9()
         lsmdata_a, lsmdata_g, lsmdata_m = lsm.getMotion9()
+        baro.readPressure()
+        baro.readTemperature()
+
+        baro.calculatePressureAndTemperature()
 
         # GNSS
 
@@ -111,7 +117,7 @@ with open('/home/pi/Navio2/Python/testrun_{}_IMU.txt'.format(fileending), 'w') a
                 print(outstr)
             dat_gnss.write(str(t_a) + outstr + "\n")
 
-        data = [t_a] + mpudata_a + mpudata_g + mpudata_m + lsmdata_a + lsmdata_g + lsmdata_m
+        data = [t_a] + mpudata_a + mpudata_g + mpudata_m + lsmdata_a + lsmdata_g + lsmdata_m + [baro.PRES] + [baro.TEMP]
 
         # print(data)
         dat_imu.write(str(data) + "\n")
