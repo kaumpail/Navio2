@@ -33,8 +33,7 @@ import spidev
 
 
 class MS5611:
-
-	class SPIBus():
+	class SPIBus:
 		def __init__(self, SPI_bus_number, SPI_dev_number):
 			self.bus = spidev.SpiDev()
 			self.SPI_bus_number = SPI_bus_number
@@ -59,7 +58,7 @@ class MS5611:
 			self.bus.close()
 			return rx[1:len(rx)]
 
-	class I2CBus():
+	class I2CBus:
 		def __init__(self, I2C_bus_number, address):
 			self.bus = SMBus(I2C_bus_number)
 			self.address = address
@@ -100,9 +99,8 @@ class MS5611:
 	__MS5611_RA_D2_OSR_2048   = 0x56
 	__MS5611_RA_D2_OSR_4096   = 0x58
 
-	def __init__(self, I2C_bus_number = 1, address = 0x77, SPI_bus_number = 0, SPI_dev_number = 0, bus = "I2C"):
-		self.bus = self.I2CBus(I2C_bus_number, address) if bus == "I2C" else  \
-                                 self.SPIBus(SPI_bus_number, SPI_dev_number)
+	def __init__(self, I2C_bus_number=1, address=0x77, SPI_bus_number=0, SPI_dev_number=0, bus="I2C"):
+		self.bus = self.I2CBus(I2C_bus_number, address) if bus == "I2C" else self.SPIBus(SPI_bus_number, SPI_dev_number)
 		self.C1 = 0
 		self.C2 = 0
 		self.C3 = 0
@@ -115,9 +113,11 @@ class MS5611:
 		self.PRES = 0.0 # Calculated Pressure
 
 	def initialize(self):
-		## The MS6511 Sensor stores 6 values in the EPROM memory that we need in order to calculate the actual temperature and pressure
-		## These values are calculated/stored at the factory when the sensor is calibrated.
-		##      I probably could have used the read word function instead of the whole block, but I wanted to keep things consistent.
+		"""The MS6511 Sensor stores 6 values in the EPROM memory that we need in order to calculate the actual
+		temperature and pressure.
+		These values are calculated/stored at the factory when the sensor is calibrated.
+		I probably could have used the read word function instead of the whole block, but I wanted to keep things
+		consistent."""
 		C1 = self.bus.read_registers(self.__MS5611_RA_C1) #Pressure Sensitivity
 		#time.sleep(0.05)
 		C2 = self.bus.read_registers(self.__MS5611_RA_C2) #Pressure Offset

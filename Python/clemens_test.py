@@ -9,6 +9,7 @@ import struct
 from navio.mpu9250 import MPU9250
 from navio.lsm9ds1 import LSM9DS1
 from navio import ublox
+from navio.ms5611 import MS5611
 
 
 #UPDATE_RATE = 80.0    # Update Rate in Hz
@@ -16,8 +17,10 @@ from navio import ublox
 # Initialize sensors
 mpu = MPU9250()
 lsm = LSM9DS1()
+baro = MS5611
 mpu.initialize()
 lsm.initialize()
+baro.initialize()
 
 # Test connection:
 if mpu.testConnection() and lsm.testConnection():
@@ -63,25 +66,38 @@ ubl.configure_message_rate(ublox.CLASS_NAV, ublox.MSG_NAV_CLOCK, 5)
 
 t_s = time.time()
 
+# find new filename
 fileending=1
-while os.path.isfile('/home/pi/Navio2/Python/testrun_{}.txt'.format(fileending)) is True:
+while os.path.isfile('/home/pi/Navio2/Python/testrun_{}_IMU.txt'.format(fileending)) is True:
     fileending += 1
 
-with open('/home/pi/Navio2/Python/testrun_{}.txt'.format(fileending), 'w') as dat:
-    dat.write('t[s], mpu_accel_1, mpu_accel_2, mpu_accel_3, mpu_gyro_1, mpu_gyro_2, mpu_gyro_3, '
-              'mpu_magn_1, mpu_magn_2, mpu_magn_3, '
-              'lsm_accel_1, lsm_accel_2, lsm_accel_3, lsm_gyro_1, lsm_gyro_2, lsm_gyro_3, '
-              'lsm_magn_1, lsm_magn_2, lsm_magn_3, gnss\n')
+# Main loop
+with open('/home/pi/Navio2/Python/testrun_{}_IMU.txt'.format(fileending), 'w') as dat_imu, \
+        open('/home/pi/Navio2/Python/testrun_{}_GNSS.txt'.format(fileending), 'w') as dat_gnss:
+
+    dat_imu.write('t[s], mpu_accel_1, mpu_accel_2, mpu_accel_3, mpu_gyro_1, mpu_gyro_2, mpu_gyro_3, '
+                  'mpu_magn_1, mpu_magn_2, mpu_magn_3, '
+                  'lsm_accel_1, lsm_accel_2, lsm_accel_3, lsm_gyro_1, lsm_gyro_2, lsm_gyro_3, '
+                  'lsm_magn_1, lsm_magn_2, lsm_magn_3, pressure, temperature\n')
+    dat_gnss.write('t[s], gnss\n')
+
     t_l = 0.0
     while True:
         t_a = time.time() - t_s
 
+        baro.refreshPressure()
+        baro.refreshTemperature()
         mpudata_a, mpudata_g, mpudata_m = mpu.getMotion9()
         lsmdata_a, lsmdata_g, lsmdata_m = lsm.getMotion9()
+        baro.readPressure()
+        baro.readTemperature()
+        baro.calculatePressureAndTemperature()
+
 
         # GNSS
-        outstr = ""
+
         if t_a - t_l > 1.0:
+            outstr = ""
             t_l = t_a
             msg = ubl.receive_message()
             if msg is None:
@@ -99,9 +115,10 @@ with open('/home/pi/Navio2/Python/testrun_{}.txt'.format(fileending), 'w') as da
                 outstr = str(msg).split(",")[1:2]
                 outstr = "".join(outstr)
                 print(outstr)
+            dat_gnss.write(str(t_a) + outstr)
 
-        data = [t_a] + mpudata_a + mpudata_g + mpudata_m + lsmdata_a + lsmdata_g + lsmdata_m
-        data.append(outstr)
+        data = [t_a] + mpudata_a + mpudata_g + mpudata_m + lsmdata_a + lsmdata_g + lsmdata_m + baro.PRES + baro.TEMP
+
         # print(data)
-        dat.write(str(data) + "\n")
+        dat_imu.write(str(data) + "\n")
         time.sleep(0.001)
