@@ -97,7 +97,6 @@ with open('/home/pi/Navio2/Python/testrun_{}_IMU.txt'.format(fileending), 'w') a
         # GNSS
 
         if t_a - t_l > 1.0:
-            outstr = ""
             t_l = t_a
             msg = ubl.receive_message()
             if msg is None:
@@ -110,12 +109,14 @@ with open('/home/pi/Navio2/Python/testrun_{}_IMU.txt'.format(fileending), 'w') a
             if msg.name() == "NAV_POSLLH":
                 outstr = str(msg).split(",")[1:]
                 outstr = "".join(outstr)
+                dat_gnss.write(str(t_a) + outstr + "\n")
                 print(outstr)
             elif msg.name() == "NAV_STATUS":
                 outstr = str(msg).split(",")[1:2]
                 outstr = "".join(outstr)
+                dat_gnss.write(str(t_a) + outstr + "\n")
                 print(outstr)
-            dat_gnss.write(str(t_a) + outstr + "\n")
+
 
         data = [t_a] + mpudata_a + mpudata_g + mpudata_m + lsmdata_a + lsmdata_g + lsmdata_m + [baro.PRES] + [baro.TEMP]
 
