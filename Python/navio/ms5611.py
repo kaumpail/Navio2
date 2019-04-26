@@ -175,7 +175,7 @@ class MS5611(object):
 		self.bus.write_register(osr)
 		time.sleep(0.01)
 
-	def refreshTemperature(self, osr=_MS5611_RA_D2_OSR_2048):
+	def refreshTemperature(self, osr=_MS5611_RA_D2_OSR_4096):
 		self.bus.write_register(osr)
 		time.sleep(0.01)
 
@@ -190,7 +190,7 @@ class MS5611(object):
 	def _calculatePressureAndTemperature(self):
 		# Calculate temperature
 		# TODO replace value again with self.D2
-		dT = self.D2 - self.C5 * 2.0**8
+		dT = 8569150 - self.C5 * 2.0**8
 		TEMP = 2000.0 + dT * self.C6 / 2.0**23
 
 		# Calculate temperature compensated pressure
