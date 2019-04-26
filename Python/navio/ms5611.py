@@ -27,21 +27,22 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 """
 
 import time
-
 from smbus import SMBus
 import spidev
 
 
-class MS5611:
-	class SPIBus:
-		def __init__(self, SPI_bus_number, SPI_dev_number):
+class MS5611(object):
+
+	class SPIBus(object):
+		def __init__(self, bustype=None, spi_bus_number=None, spi_dev_number=None):
+			self.bus_type = bustype
 			self.bus = spidev.SpiDev()
-			self.SPI_bus_number = SPI_bus_number
-			self.SPI_dev_number = SPI_dev_number
+			self.spi_bus_number = spi_bus_number
+			self.spi_dev_number = spi_dev_number
 
 		def open(self):
-			self.bus.open(self.SPI_bus_number, self.SPI_dev_number)
-			self.bus.max_speed_hz=1000000
+			self.bus.open(self.spi_bus_number, self.spi_dev_number)
+			self.bus.max_speed_hz = 1000000
 
 		def write_register(self, reg_address, data = 0x00):
 			self.open()
@@ -58,129 +59,154 @@ class MS5611:
 			self.bus.close()
 			return rx[1:len(rx)]
 
-	class I2CBus:
+	class I2CBus(object):
 		def __init__(self, I2C_bus_number, address):
 			self.bus = SMBus(I2C_bus_number)
 			self.address = address
 
-		def write_register(self, reg_address, device_address = None):
-			device_address = self.address
-			return self.bus.write_byte(device_address, reg_address)
+		def write_register(self, reg_address):
+			return self.bus.write_byte(self.address, reg_address)
 
-		def read_registers(self, reg_address, device_address = None):
-			device_address = self.address
-			return self.bus.read_i2c_block_data(device_address, reg_address)
+		def read_registers(self, reg_address):
+			data = self.bus.read_i2c_block_data(self.address, reg_address)
+			print(data)
+			return data
 
-	__MS5611_ADDRESS_CSB_LOW  = 0x76
-	__MS5611_ADDRESS_CSB_HIGH = 0x77
-	__MS5611_DEFAULT_ADDRESS  = 0x77
+	# Minimal and Maximal detectable pressures in mbar and temperatures in °C
+	_PRESSURE_MIN = 10.0
+	_PRESSURE_MAX = 1200.0
+	_TEMP_MIN = -40.0
+	_TEMP_MAX = 85.0
+	_TEMP_REF = 20.0
 
-	__MS5611_RA_ADC           = 0x00
-	__MS5611_RA_RESET         = 0x1E
+	# Registers
+	_MS5611_I2C_ADDRESS_CSB_HIGH = 0x76
+	_MS5611_I2C_ADDRESS_CSB_LOW  = 0x77
+	_MS5611_DEFAULT_ADDRESS      = 0x77  # CSB PIN is active low
 
-	__MS5611_RA_C0            = 0xA0
-	__MS5611_RA_C1            = 0xA2
-	__MS5611_RA_C2            = 0xA4
-	__MS5611_RA_C3            = 0xA6
-	__MS5611_RA_C4            = 0xA8
-	__MS5611_RA_C5            = 0xAA
-	__MS5611_RA_C6            = 0xAC
-	__MS5611_RA_C7            = 0xAE
+	# ADC Read. Returns 24bit
+	_MS5611_RA_ADC_READ      = 0x00
+	_MS5611_RA_RESET         = 0x1E
 
-	__MS5611_RA_D1_OSR_256    = 0x40
-	__MS5611_RA_D1_OSR_512    = 0x42
-	__MS5611_RA_D1_OSR_1024   = 0x44
-	__MS5611_RA_D1_OSR_2048   = 0x46
-	__MS5611_RA_D1_OSR_4096   = 0x48
+	# PROM Read. Returns 16bit
+	_MS5611_RA_C0            = 0xA0
+	_MS5611_RA_C1            = 0xA2
+	_MS5611_RA_C2            = 0xA4
+	_MS5611_RA_C3            = 0xA6
+	_MS5611_RA_C4            = 0xA8
+	_MS5611_RA_C5            = 0xAA
+	_MS5611_RA_C6            = 0xAC
+	_MS5611_RA_C7            = 0xAE
 
-	__MS5611_RA_D2_OSR_256    = 0x50
-	__MS5611_RA_D2_OSR_512    = 0x52
-	__MS5611_RA_D2_OSR_1024   = 0x54
-	__MS5611_RA_D2_OSR_2048   = 0x56
-	__MS5611_RA_D2_OSR_4096   = 0x58
+	_MS5611_RA_D1_OSR_256    = 0x40
+	_MS5611_RA_D1_OSR_512    = 0x42
+	_MS5611_RA_D1_OSR_1024   = 0x44
+	_MS5611_RA_D1_OSR_2048   = 0x46
+	_MS5611_RA_D1_OSR_4096   = 0x48
 
-	def __init__(self, I2C_bus_number=1, address=0x77, SPI_bus_number=0, SPI_dev_number=0, bus="I2C"):
-		self.bus = self.I2CBus(I2C_bus_number, address) if bus == "I2C" else self.SPIBus(SPI_bus_number, SPI_dev_number)
-		self.C1 = 0
-		self.C2 = 0
-		self.C3 = 0
-		self.C4 = 0
-		self.C5 = 0
-		self.C6 = 0
-		self.D1 = 0
-		self.D2 = 0
-		self.TEMP = 0.0 # Calculated temperature
-		self.PRES = 0.0 # Calculated Pressure
+	_MS5611_RA_D2_OSR_256    = 0x50
+	_MS5611_RA_D2_OSR_512    = 0x52
+	_MS5611_RA_D2_OSR_1024   = 0x54
+	_MS5611_RA_D2_OSR_2048   = 0x56
+	_MS5611_RA_D2_OSR_4096   = 0x58
 
-	def initialize(self):
+	def __init__(self, I2C_bus_number=1, address=_MS5611_I2C_ADDRESS_CSB_LOW, SPI_bus_number=0, SPI_dev_number=0, bus="I2C"):
+
+		if bus == "I2C":
+			self.bus = self.I2CBus(I2C_bus_number, address)
+		else:
+			self.bus = self.SPIBus(SPI_bus_number, SPI_dev_number)
+
+		# Calibration data
+		self.C1 = 0		 # Pressure Sensitivity
+		self.C2 = 0		 # Pressure Offset
+		self.C3 = 0		 # Temperature coefficient of pressure sensitivity
+		self.C4 = 0		 # Temperature coefficient of pressure offset
+		self.C5 = 0		 # Reference temperature
+		self.C6 = 0		 # Temperature coefficient of the temperature
+
+		# Measurement values (digital)
+		self.D1 = 0		 # Digital pressure value
+		self.D2 = 0		 # Digital temperature value
+
+		self.TEMP = 0.0  # Calculated temperature
+		self.PRES = 0.0  # Calculated Pressure
+
+		self._initialize()
+
+	def _initialize(self):
 		"""The MS6511 Sensor stores 6 values in the EPROM memory that we need in order to calculate the actual
 		temperature and pressure.
 		These values are calculated/stored at the factory when the sensor is calibrated.
 		I probably could have used the read word function instead of the whole block, but I wanted to keep things
 		consistent."""
-		C1 = self.bus.read_registers(self.__MS5611_RA_C1) #Pressure Sensitivity
-		#time.sleep(0.05)
-		C2 = self.bus.read_registers(self.__MS5611_RA_C2) #Pressure Offset
-		#time.sleep(0.05)
-		C3 = self.bus.read_registers(self.__MS5611_RA_C3) #Temperature coefficient of pressure sensitivity
-		#time.sleep(0.05)
-		C4 = self.bus.read_registers(self.__MS5611_RA_C4) #Temperature coefficient of pressure offset
-		#time.sleep(0.05)
-		C5 = self.bus.read_registers(self.__MS5611_RA_C5) #Reference temperature
-		#time.sleep(0.05)
-		C6 = self.bus.read_registers(self.__MS5611_RA_C6) #Temperature coefficient of the temperature
+		C1 = self.bus.read_registers(self._MS5611_RA_C1)	 # Pressure Sensitivity
+		# time.sleep(0.05)
+		C2 = self.bus.read_registers(self._MS5611_RA_C2)	 # Pressure Offset
+		# time.sleep(0.05)
+		C3 = self.bus.read_registers(self._MS5611_RA_C3)	 # Temperature coefficient of pressure sensitivity
+		# time.sleep(0.05)
+		C4 = self.bus.read_registers(self._MS5611_RA_C4)	 # Temperature coefficient of pressure offset
+		# time.sleep(0.05)
+		C5 = self.bus.read_registers(self._MS5611_RA_C5)	 # Reference temperature
+		# time.sleep(0.05)
+		C6 = self.bus.read_registers(self._MS5611_RA_C6)	 # Temperature coefficient of the temperature
 
-		## Again here we are converting the 2 8bit packages into a single decimal
-		self.C1 = C1[0] * 256.0 + C1[1]
-		self.C2 = C2[0] * 256.0 + C2[1]
-		self.C3 = C3[0] * 256.0 + C3[1]
-		self.C4 = C4[0] * 256.0 + C4[1]
-		self.C5 = C5[0] * 256.0 + C5[1]
-		self.C6 = C6[0] * 256.0 + C6[1]
+		## Again here we are converting the 2 8bit packages into a n integer
+		self.C1 = (C1[0] << 8) + C1[1]
+		self.C2 = (C2[0] << 8) + C2[1]
+		self.C3 = (C3[0] << 8) + C3[1]
+		self.C4 = (C4[0] << 8) + C4[1]
+		self.C5 = (C5[0] << 8) + C5[1]
+		self.C6 = (C6[0] << 8) + C6[1]
 
 		self.update()
 
-	def refreshPressure(self, OSR = __MS5611_RA_D1_OSR_4096):
-		self.bus.write_register(OSR)
+	def refreshPressure(self, osr=_MS5611_RA_D1_OSR_4096):
+		self.bus.write_register(osr)
 
-	def refreshTemperature(self, OSR = __MS5611_RA_D2_OSR_4096):
-		self.bus.write_register(OSR)
+	def refreshTemperature(self, osr=_MS5611_RA_D2_OSR_4096):
+		self.bus.write_register(osr)
 
 	def readPressure(self):
-		D1 = self.bus.read_registers(self.__MS5611_RA_ADC)
-		self.D1 = D1[0] * 65536 + D1[1] * 256.0 + D1[2]
+		D1 = self.bus.read_registers(self._MS5611_RA_ADC_READ)
+		self.D1 = (D1[0] << 16) + (D1[1] << 8) + D1[2]
 
 	def readTemperature(self):
-		D2 = self.bus.read_registers(self.__MS5611_RA_ADC)
-		self.D2 = D2[0] * 65536 + D2[1] * 256.0 + D2[2]
+		D2 = self.bus.read_registers(self._MS5611_RA_ADC_READ)
+		self.D2 = (D2[0] << 16) + (D2[1] << 8) + D2[2]
 
-	def calculatePressureAndTemperature(self):
-		dT = self.D2 - self.C5 * 2**8
-		self.TEMP = 2000 + dT * self.C6 / 2**23
+	def _calculatePressureAndTemperature(self):
+		# Calculate temperature
+		dT = self.D2 - self.C5 * 2.0**8
+		TEMP = 2000.0 + dT * self.C6 / 2.0**23
 
-		OFF = self.C2 * 2**16 + (self.C4 * dT) / 2**7
-		SENS = self.C1 * 2**15 + (self.C3 * dT) / 2**8
+		# Calculate temperature compensated pressure
+		OFF = self.C2 * 2.0 ** 16 + (self.C4 * dT) / 2.0**7
+		SENS = self.C1 * 2.0 ** 15 + (self.C3 * dT) / 2.0**8
 
-		if (self.TEMP >= 2000):
+		# Second order temperature compensation
+		T2 = 0.0
+		OFF2 = 0.0
+		SENS2 = 0.0
+		if TEMP >= 20.0:
 			T2 = 0
 			OFF2 = 0
-			SENS2 = 0
-		elif (self.TEMP < 2000):
-			T2 = dT * dT / 2**31
-			OFF2 = 5 * ((self.TEMP - 2000) ** 2) / 2
-			SENS2 = OFF2 / 2
-		elif (self.TEMP < -1500):
-			OFF2 = OFF2 + 7 * ((self.TEMP + 1500) ** 2)
-			SENS2 = SENS2 + 11 * (self.TEMP + 1500) ** 2 / 2
+			Sens2 = 0
+		elif TEMP < 20.0:
+			T2 = dT**2 / 2**31
+			OFF2 = 5.0*(TEMP - 2000.0)**2 / 2
+			SENS2 = 5.0*(TEMP-2000.0)**2 / 4
+			if TEMP < -15.0:
+				OFF2 = OFF2 + 7.0*(TEMP + 1500.0)**2
+				SENS2 = SENS2 + 11.0*(TEMP + 1500.0)**2 / 2.0
 
-		self.TEMP = self.TEMP - T2
+		TEMP = TEMP - T2
 		OFF = OFF - OFF2
 		SENS = SENS - SENS2
 
-		self.PRES = (self.D1 * SENS / 2**21 - OFF) / 2**15
-
-		self.TEMP = self.TEMP / 100 # Temperature updated
-		self.PRES = self.PRES / 100 # Pressure updated
+		self.TEMP = TEMP
+		self.PRES = (self.D1 * SENS / 2.0**21 - OFF) / 2.0**15
 
 	def returnPressure(self):
 		return self.PRES
@@ -190,17 +216,15 @@ class MS5611:
 
 	def update(self):
 		self.refreshPressure()
-		time.sleep(0.01) # Waiting for pressure data ready
-		self.readPressure()
-
 		self.refreshTemperature()
-		time.sleep(0.01) # Waiting for temperature data ready
+		time.sleep(0.01) 	# Waiting for pressure data ready
+		self.readPressure()
 		self.readTemperature()
 
-		self.calculatePressureAndTemperature()
+		self._calculatePressureAndTemperature()
 
 	def test(self):
-		self.initialize()
+		self._initialize()
 		self.update()
 		is_pressure_valid = 1000 <= self.PRES <= 1050
 		is_temp_valid = -40 <= self.TEMP <= 80

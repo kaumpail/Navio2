@@ -92,10 +92,9 @@ with open('/home/pi/Navio2/Python/testrun_{}_IMU.txt'.format(fileending), 'w') a
         baro.readPressure()
         baro.readTemperature()
 
-        baro.calculatePressureAndTemperature()
+        baro._calculatePressureAndTemperature()
 
         # GNSS
-
         if t_a - t_l > 1.0:
             t_l = t_a
             msg = ubl.receive_message()
