@@ -68,7 +68,7 @@ class MS5611(object):
 			return self.bus.write_byte(self.address, reg_address)
 
 		def read_registers(self, reg_address, length=3):
-			data = self.bus.read_i2c_block_data(reg_address, 0, length)
+			data = self.bus.read_i2c_block_data(self.address, reg_address, length)
 			print("reg {}: {}".format(reg_address, data))
 			return data
 
