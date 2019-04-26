@@ -63,6 +63,7 @@ class MS5611(object):
 		def __init__(self, I2C_bus_number, address):
 			self.bus = SMBus(I2C_bus_number)
 			self.address = address
+			print(str(self.bus) + str(self.address))
 
 		def write_register(self, reg_address):
 			return self.bus.write_byte(self.address, reg_address)
