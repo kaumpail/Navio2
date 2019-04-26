@@ -69,7 +69,7 @@ class MS5611(object):
 
 		def read_registers(self, reg_address):
 			data = self.bus.read_i2c_block_data(self.address, reg_address)
-			print(data)
+			print("reg {}: {}".format(reg_address, data))
 			return data
 
 	# Minimal and Maximal detectable pressures in mbar and temperatures in °C
