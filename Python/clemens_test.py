@@ -16,11 +16,12 @@ from navio.ms5611 import MS5611
 
 # Initialize sensors
 mpu = MPU9250()
-lsm = LSM9DS1()
-baro = MS5611()
 mpu.initialize()
+
+lsm = LSM9DS1()
 lsm.initialize()
-baro.initialize()
+
+baro = MS5611()
 
 # Test connection:
 if mpu.testConnection() and lsm.testConnection():
@@ -85,12 +86,9 @@ with open('/home/pi/Navio2/Python/testrun_{}_IMU.txt'.format(fileending), 'w') a
     while True:
         t_a = time.time() - t_s
 
-        baro.refreshPressure()
-        baro.refreshTemperature()
+        baro.update()
         mpudata_a, mpudata_g, mpudata_m = mpu.getMotion9()
         lsmdata_a, lsmdata_g, lsmdata_m = lsm.getMotion9()
-        baro.readPressure()
-        baro.readTemperature()
 
         baro._calculatePressureAndTemperature()
 
