@@ -211,10 +211,8 @@ class MS5611(object):
 				SENS2 = SENS2 + 11.0*(TEMP + 1500.0)**2 / 2.0
 
 		TEMP = TEMP - T2
-		OFF = OFF - OFF2
-		SENS = SENS - SENS2
-		print("OFF" + str(OFF))
-		print("SENS" + str(SENS))
+		OFF = 0.0
+		SENS = 0.0
 
 		self.TEMP = TEMP
 		self.PRES = (self.D1 * SENS / 2.0**21 - OFF) / 2.0**15
