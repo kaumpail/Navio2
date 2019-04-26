@@ -158,11 +158,11 @@ class MS5611(object):
 
         self.update()
 
-    def refreshTemperature(self, osr=_MS5611_RA_D2_OSR_256):
+    def refreshTemperature(self, osr=_MS5611_RA_D2_OSR_2048):
         self.bus.write_register(osr)
         time.sleep(0.01)
 
-    def refreshPressure(self, osr=_MS5611_RA_D1_OSR_256):
+    def refreshPressure(self, osr=_MS5611_RA_D1_OSR_2048):
         self.bus.write_register(osr)
         time.sleep(0.01)
 
