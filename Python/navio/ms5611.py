@@ -173,9 +173,11 @@ class MS5611(object):
 
 	def refreshPressure(self, osr=_MS5611_RA_D1_OSR_4096):
 		self.bus.write_register(osr)
+		time.sleep(0.01)
 
-	def refreshTemperature(self, osr=_MS5611_RA_D2_OSR_4096):
+	def refreshTemperature(self, osr=_MS5611_RA_D2_OSR_2048):
 		self.bus.write_register(osr)
+		time.sleep(0.01)
 
 	def readPressure(self):
 		D1 = self.bus.read_registers(self._MS5611_RA_ADC_READ, length=3)
@@ -187,6 +189,7 @@ class MS5611(object):
 
 	def _calculatePressureAndTemperature(self):
 		# Calculate temperature
+		# TODO replace value again with self.D2
 		dT = self.D2 - self.C5 * 2.0**8
 		TEMP = 2000.0 + dT * self.C6 / 2.0**23
 
@@ -211,8 +214,8 @@ class MS5611(object):
 				SENS2 = SENS2 + 11.0*(TEMP + 1500.0)**2 / 2.0
 
 		TEMP = TEMP - T2
-		OFF = 0.0
-		SENS = 0.0
+		OFF = OFF - OFF2
+		SENS = SENS - SENS2
 
 		self.TEMP = TEMP
 		self.PRES = (self.D1 * SENS / 2.0**21 - OFF) / 2.0**15
