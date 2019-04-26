@@ -217,8 +217,8 @@ class MS5611(object):
 		OFF = OFF - OFF2
 		SENS = SENS - SENS2
 
-		self.TEMP = TEMP
-		self.PRES = (self.D1 * SENS / 2.0**21 - OFF) / 2.0**15
+		self.TEMP = TEMP / 100.0
+		self.PRES = ((self.D1 * SENS / 2.0**21 - OFF) / 2.0**15 ) / 100.0
 
 	def returnPressure(self):
 		return self.PRES
