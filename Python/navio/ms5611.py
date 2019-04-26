@@ -27,7 +27,7 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 """
 
 import time
-from smbus import SMBus
+from smbus2 import SMBus
 import spidev
 
 
@@ -63,13 +63,12 @@ class MS5611(object):
 		def __init__(self, I2C_bus_number, address):
 			self.bus = SMBus(I2C_bus_number)
 			self.address = address
-			print(str(self.bus) + str(self.address))
 
 		def write_register(self, reg_address):
 			return self.bus.write_byte(self.address, reg_address)
 
-		def read_registers(self, reg_address):
-			data = self.bus.read_i2c_block_data(self.address, reg_address)
+		def read_registers(self, reg_address, length=3):
+			data = self.bus.read_i2c_block_data(reg_address, 0, length)
 			print("reg {}: {}".format(reg_address, data))
 			return data
 
@@ -115,8 +114,10 @@ class MS5611(object):
 
 		if bus == "I2C":
 			self.bus = self.I2CBus(I2C_bus_number, address)
-		else:
+		elif bus == "SPI":
 			self.bus = self.SPIBus(SPI_bus_number, SPI_dev_number)
+		else:
+			raise ValueError("Choose proper bus type. (I2C or SPI)")
 
 		# Calibration data
 		self.C1 = 0		 # Pressure Sensitivity
@@ -147,17 +148,17 @@ class MS5611(object):
 		These values are calculated/stored at the factory when the sensor is calibrated.
 		I probably could have used the read word function instead of the whole block, but I wanted to keep things
 		consistent."""
-		C1 = self.bus.read_registers(self._MS5611_RA_C1)	 # Pressure Sensitivity
+		C1 = self.bus.read_registers(self._MS5611_RA_C1, length=2)	 # Pressure Sensitivity
 		time.sleep(0.05)
-		C2 = self.bus.read_registers(self._MS5611_RA_C2)	 # Pressure Offset
+		C2 = self.bus.read_registers(self._MS5611_RA_C2, length=2)	 # Pressure Offset
 		time.sleep(0.05)
-		C3 = self.bus.read_registers(self._MS5611_RA_C3)	 # Temperature coefficient of pressure sensitivity
+		C3 = self.bus.read_registers(self._MS5611_RA_C3, length=2)	 # Temperature coefficient of pressure sensitivity
 		time.sleep(0.05)
-		C4 = self.bus.read_registers(self._MS5611_RA_C4)	 # Temperature coefficient of pressure offset
+		C4 = self.bus.read_registers(self._MS5611_RA_C4, length=2)	 # Temperature coefficient of pressure offset
 		time.sleep(0.05)
-		C5 = self.bus.read_registers(self._MS5611_RA_C5)	 # Reference temperature
+		C5 = self.bus.read_registers(self._MS5611_RA_C5, length=2)	 # Reference temperature
 		time.sleep(0.05)
-		C6 = self.bus.read_registers(self._MS5611_RA_C6)	 # Temperature coefficient of the temperature
+		C6 = self.bus.read_registers(self._MS5611_RA_C6, length=2)	 # Temperature coefficient of the temperature
 		time.sleep(0.05)
 
 		## Again here we are converting the 2 8bit packages into a n integer
@@ -177,11 +178,11 @@ class MS5611(object):
 		self.bus.write_register(osr)
 
 	def readPressure(self):
-		D1 = self.bus.read_registers(self._MS5611_RA_ADC_READ)
+		D1 = self.bus.read_registers(self._MS5611_RA_ADC_READ, length=3)
 		self.D1 = (D1[0] << 16) + (D1[1] << 8) + D1[2]
 
 	def readTemperature(self):
-		D2 = self.bus.read_registers(self._MS5611_RA_ADC_READ)
+		D2 = self.bus.read_registers(self._MS5611_RA_ADC_READ, length=3)
 		self.D2 = (D2[0] << 16) + (D2[1] << 8) + D2[2]
 
 	def _calculatePressureAndTemperature(self):
