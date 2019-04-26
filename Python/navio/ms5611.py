@@ -69,7 +69,6 @@ class MS5611(object):
 
 		def read_registers(self, reg_address, length=3):
 			data = self.bus.read_i2c_block_data(self.address, reg_address, length)
-			print("reg {}: {}".format(reg_address, data))
 			return data
 
 	# Minimal and Maximal detectable pressures in mbar and temperatures in °C
@@ -135,12 +134,6 @@ class MS5611(object):
 		self.PRES = 0.0  # Calculated Pressure
 
 		self._initialize()
-		print(self.C1)
-		print(self.C2)
-		print(self.C3)
-		print(self.C4)
-		print(self.C5)
-		print(self.C6)
 
 	def _initialize(self):
 		"""The MS6511 Sensor stores 6 values in the EPROM memory that we need in order to calculate the actual
@@ -149,17 +142,11 @@ class MS5611(object):
 		I probably could have used the read word function instead of the whole block, but I wanted to keep things
 		consistent."""
 		C1 = self.bus.read_registers(self._MS5611_RA_C1, length=2)	 # Pressure Sensitivity
-		time.sleep(0.05)
 		C2 = self.bus.read_registers(self._MS5611_RA_C2, length=2)	 # Pressure Offset
-		time.sleep(0.05)
 		C3 = self.bus.read_registers(self._MS5611_RA_C3, length=2)	 # Temperature coefficient of pressure sensitivity
-		time.sleep(0.05)
 		C4 = self.bus.read_registers(self._MS5611_RA_C4, length=2)	 # Temperature coefficient of pressure offset
-		time.sleep(0.05)
 		C5 = self.bus.read_registers(self._MS5611_RA_C5, length=2)	 # Reference temperature
-		time.sleep(0.05)
 		C6 = self.bus.read_registers(self._MS5611_RA_C6, length=2)	 # Temperature coefficient of the temperature
-		time.sleep(0.05)
 
 		## Again here we are converting the 2 8bit packages into a n integer
 		self.C1 = (C1[0] << 8) + C1[1]
@@ -171,13 +158,13 @@ class MS5611(object):
 
 		self.update()
 
-	def refreshPressure(self, osr=_MS5611_RA_D1_OSR_4096):
+	def refreshTemperature(self, osr=_MS5611_RA_D2_OSR_256):
 		self.bus.write_register(osr)
-		time.sleep(0.01)
+		time.sleep(0.5)
 
-	def refreshTemperature(self, osr=_MS5611_RA_D2_OSR_4096):
+	def refreshPressure(self, osr=_MS5611_RA_D1_OSR_256):
 		self.bus.write_register(osr)
-		time.sleep(0.01)
+		time.sleep(0.5)
 
 	def readPressure(self):
 		D1 = self.bus.read_registers(self._MS5611_RA_ADC_READ, length=3)
@@ -189,8 +176,7 @@ class MS5611(object):
 
 	def _calculatePressureAndTemperature(self):
 		# Calculate temperature
-		# TODO replace value again with self.D2
-		dT = 8569150 - self.C5 * 2.0**8
+		dT = self.D2 - self.C5 * 2.0**8
 		TEMP = 2000.0 + dT * self.C6 / 2.0**23
 
 		# Calculate temperature compensated pressure
@@ -227,14 +213,11 @@ class MS5611(object):
 		return self.TEMP
 
 	def update(self):
-		self.refreshPressure()
-		time.sleep(0.1)
 		self.refreshTemperature()
-		time.sleep(0.1) 	# Waiting for pressure data ready
-		self.readPressure()
-		time.sleep(0.1)
 		self.readTemperature()
-		time.sleep(0.1)
+
+		self.refreshPressure()
+		self.readPressure()
 
 		self._calculatePressureAndTemperature()
 
