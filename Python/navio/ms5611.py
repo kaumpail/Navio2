@@ -89,14 +89,14 @@ class MS5611(object):
 	_MS5611_RA_RESET         = 0x1E
 
 	# PROM Read. Returns 16bit
-	_MS5611_RA_C0            = 0xA0
+	_MS5611_RA_MANUFACTURER  = 0xA0		# Reserved for Manufacturer
 	_MS5611_RA_C1            = 0xA2
 	_MS5611_RA_C2            = 0xA4
 	_MS5611_RA_C3            = 0xA6
 	_MS5611_RA_C4            = 0xA8
 	_MS5611_RA_C5            = 0xAA
 	_MS5611_RA_C6            = 0xAC
-	_MS5611_RA_C7            = 0xAE
+	_MS5611_RA_CRC           = 0xAE		# 4-bit CRC for data validity check
 
 	_MS5611_RA_D1_OSR_256    = 0x40
 	_MS5611_RA_D1_OSR_512    = 0x42
@@ -147,16 +147,17 @@ class MS5611(object):
 		I probably could have used the read word function instead of the whole block, but I wanted to keep things
 		consistent."""
 		C1 = self.bus.read_registers(self._MS5611_RA_C1)	 # Pressure Sensitivity
-		# time.sleep(0.05)
+		time.sleep(0.05)
 		C2 = self.bus.read_registers(self._MS5611_RA_C2)	 # Pressure Offset
-		# time.sleep(0.05)
+		time.sleep(0.05)
 		C3 = self.bus.read_registers(self._MS5611_RA_C3)	 # Temperature coefficient of pressure sensitivity
-		# time.sleep(0.05)
+		time.sleep(0.05)
 		C4 = self.bus.read_registers(self._MS5611_RA_C4)	 # Temperature coefficient of pressure offset
-		# time.sleep(0.05)
+		time.sleep(0.05)
 		C5 = self.bus.read_registers(self._MS5611_RA_C5)	 # Reference temperature
-		# time.sleep(0.05)
+		time.sleep(0.05)
 		C6 = self.bus.read_registers(self._MS5611_RA_C6)	 # Temperature coefficient of the temperature
+		time.sleep(0.05)
 
 		## Again here we are converting the 2 8bit packages into a n integer
 		self.C1 = (C1[0] << 8) + C1[1]
@@ -222,10 +223,13 @@ class MS5611(object):
 
 	def update(self):
 		self.refreshPressure()
+		time.sleep(0.1)
 		self.refreshTemperature()
-		time.sleep(0.01) 	# Waiting for pressure data ready
+		time.sleep(0.1) 	# Waiting for pressure data ready
 		self.readPressure()
+		time.sleep(0.1)
 		self.readTemperature()
+		time.sleep(0.1)
 
 		self._calculatePressureAndTemperature()
 
