@@ -133,6 +133,12 @@ class MS5611(object):
 		self.PRES = 0.0  # Calculated Pressure
 
 		self._initialize()
+		print(self.C1)
+		print(self.C2)
+		print(self.C3)
+		print(self.C4)
+		print(self.C5)
+		print(self.C6)
 
 	def _initialize(self):
 		"""The MS6511 Sensor stores 6 values in the EPROM memory that we need in order to calculate the actual
