@@ -22,4 +22,4 @@ while(True):
 
 	print("Temperature(C): {}".format(baro.TEMP), "Pressure(millibar): {}".format(baro.PRES))
 
-	time.sleep(1)
+	time.sleep(0.1)
