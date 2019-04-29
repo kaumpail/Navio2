@@ -7,17 +7,9 @@ Released under GNU GPL version 3 or later
 """
 
 import struct
-from datetime import datetime
 import time
 import os
-import sys
 import signal
-
-# specify Python version
-if sys.version_info[0] < 3: # we're on python 2.x.x
-    PYTHON_VERSION = 2
-else:
-    PYTHON_VERSION = 3
 
 # protocol constants
 PREAMBLE1 = 0xb5
@@ -164,6 +156,18 @@ RESET_GPS_STOP      = 8
 RESET_GPS_START     = 9
 
 
+def ArrayParse(field):
+    """parse an array descriptor"""
+    arridx = field.find('[')
+    if arridx == -1:
+        return field, -1
+
+    alen = int(field[arridx+1:-1])
+    fieldname = field[:arridx]
+
+    return fieldname, alen
+
+
 class UBloxError(Exception):
     """Ublox error class"""
     def __init__(self, msg):
@@ -208,18 +212,6 @@ class UBloxAttrDict(dict):
             dict.__setattr__(self, name, value)
         else:
             self.__setitem__(name, value)
-
-
-def ArrayParse(field):
-    """parse an array descriptor"""
-    arridx = field.find('[')
-    if arridx == -1:
-        return field, -1
-
-    alen = int(field[arridx+1:-1])
-    fieldname = field[:arridx]
-
-    return fieldname, alen
 
 
 class UBloxDescriptor:
@@ -616,26 +608,17 @@ class UBloxMessage:
             raise UBloxError('Unknown message %s length=%u' % (str(type), len(self._buf)))
         return msg_types[type].name
     
-    if PYTHON_VERSION == 2:
-        def msg_class(self):
-            """return the message class"""
-            return ord(self._buf[2])
+    def msg_class(self):
+        """return the message class"""
+        return self._buf[2]
 
-        def msg_id(self):
-            """return the message id within the class"""
-            return ord(self._buf[3])
-    else:
-        def msg_class(self):
-            """return the message class"""
-            return (self._buf[2])
-
-        def msg_id(self):
-            """return the message id within the class"""
-            return (self._buf[3])
+    def msg_id(self):
+        """return the message id within the class"""
+        return self._buf[3]
 
     def msg_type(self):
         """return the message type tuple (class, id)"""
-        return (self.msg_class(), self.msg_id())
+        return self.msg_class(), self.msg_id()
 
     def msg_length(self):
         """return the payload length"""
@@ -644,18 +627,11 @@ class UBloxMessage:
 
     def valid_so_far(self):
         """check if the message is valid so far"""
-        if PYTHON_VERSION == 2:
-            if len(self._buf) > 0 and ord(self._buf[0]) != PREAMBLE1:
-                return False
-            if len(self._buf) > 1 and ord(self._buf[1]) != PREAMBLE2:
-                self.debug(1, "bad pre2")
-                return False
-        else:
-            if len(self._buf) > 0 and (self._buf[0]) != PREAMBLE1:
-                return False
-            if len(self._buf) > 1 and (self._buf[1]) != PREAMBLE2:
-                self.debug(1, "bad pre2")
-                return False
+        if len(self._buf) > 0 and (self._buf[0]) != PREAMBLE1:
+            return False
+        if len(self._buf) > 1 and (self._buf[1]) != PREAMBLE2:
+            self.debug(1, "bad pre2")
+            return False
                 
         if self.needed_bytes() == 0 and not self.valid():
             if len(self._buf) > 8:
@@ -738,7 +714,7 @@ class UBlox:
         if self.serial_device.startswith("spi:"):
             import spidev
             bus, cs = map(int, self.serial_device.split(':')[1].split('.'))
-            #print(bus, cs)
+            # print(bus, cs)
             self.use_xfer = True
             self.dev = spidev.SpiDev()
             self.dev.open(bus, cs)
@@ -845,12 +821,9 @@ class UBlox:
         if not self.read_only:
             s = msg + "*%02X" % self.nmea_checksum(msg)
             
-            if PYTHON_VERSION == 2:
-                b = bytearray()
-                b.extend(s)
-            else:
-                b = bytearray()
-                b.extend(map(ord, s))
+
+            b = bytearray()
+            b.extend(map(ord, s))
             self.write(b)
 
     def set_binary(self):
@@ -916,13 +889,7 @@ class UBlox:
                     continue
                 return None
             if self.use_xfer: 
-                if PYTHON_VERSION == 3:
-                    bb = bytearray()
-                    for c in b:
-                        bb.append(c)
-                    b = bb
-                else:
-                    b = "".join([chr(c) for c in b]) # here str
+                b = "".join([chr(c) for c in b]) # here str
             msg.add(b)
             if self.log is not None:
                 self.log.write(b)
