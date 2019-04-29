@@ -74,25 +74,28 @@ while os.path.isfile('/home/pi/Navio2/Python/testrun_{}_IMU.txt'.format(fileendi
 
 # Main loop
 with open('/home/pi/Navio2/Python/testrun_{}_IMU.txt'.format(fileending), 'w') as dat_imu, \
-        open('/home/pi/Navio2/Python/testrun_{}_GNSS.txt'.format(fileending), 'w') as dat_gnss:
+        open('/home/pi/Navio2/Python/testrun_{}_GNSS.txt'.format(fileending), 'w') as dat_gnss, \
+        open('/home/pi/Navio2/Python/testrun_{}_baro.txt'.format(fileending), 'w') as dat_baro:
 
     dat_imu.write('t[s], mpu_accel_1, mpu_accel_2, mpu_accel_3, mpu_gyro_1, mpu_gyro_2, mpu_gyro_3, '
                   'mpu_magn_1, mpu_magn_2, mpu_magn_3, '
                   'lsm_accel_1, lsm_accel_2, lsm_accel_3, lsm_gyro_1, lsm_gyro_2, lsm_gyro_3, '
-                  'lsm_magn_1, lsm_magn_2, lsm_magn_3, pressure, temp\n')
+                  'lsm_magn_1, lsm_magn_2, lsm_magn_3\n')
     dat_gnss.write('t[s], gnss\n')
+    dat_baro.write('t[s], pressure [mbar], temperature [°C]\n')
 
     t_l = 0.0
     while True:
         t_a = time.time() - t_s
 
-        baro.update()
+
         mpudata_a, mpudata_g, mpudata_m = mpu.getMotion9()
         lsmdata_a, lsmdata_g, lsmdata_m = lsm.getMotion9()
 
-        # GNSS
+        # GNSS & barometer
         if t_a - t_l > 1.0:
             t_l = t_a
+            baro.update()
             msg = ubl.receive_message()
             if msg is None:
                 if opts.reopen:
@@ -101,19 +104,22 @@ with open('/home/pi/Navio2/Python/testrun_{}_IMU.txt'.format(fileending), 'w') a
                     continue
                 print(empty)
                 break
-            if msg.name() == "NAV_POSLLH":
-                outstr = str(msg).split(",")[1:]
-                outstr = "".join(outstr)
-                dat_gnss.write(str(t_a) + outstr + "\n")
-                print(outstr)
-            elif msg.name() == "NAV_STATUS":
-                outstr = str(msg).split(",")[1:2]
-                outstr = "".join(outstr)
-                dat_gnss.write(str(t_a) + outstr + "\n")
-                print(outstr)
+            # if msg.name() == "NAV_POSLLH":
+            #     outstr = str(msg).split(",")[1:]
+            #     outstr = "".join(outstr)
+            #     dat_gnss.write(str(t_a) + outstr + "\n")
+            #     print(outstr)
+            # elif msg.name() == "NAV_STATUS":
+            #     outstr = str(msg).split(",")[1:2]
+            #     outstr = "".join(outstr)
+            #     dat_gnss.write(str(t_a) + outstr + "\n")
+            #     print(outstr)
+            dat_gnss.write(msg)
+
+            dat_baro.write("{}, {}, {}".format(t_a, baro.returnPressure(), baro.returnTemperature()))
 
 
-        data = [t_a] + mpudata_a + mpudata_g + mpudata_m + lsmdata_a + lsmdata_g + lsmdata_m + [baro.PRES] + [baro.TEMP]
+        data = [t_a] + mpudata_a + mpudata_g + mpudata_m + lsmdata_a + lsmdata_g + lsmdata_m
 
         # print(data)
         dat_imu.write(str(data) + "\n")
