@@ -33,6 +33,9 @@ else:
 # GNSS
 ubl = ublox.UBlox("spi:0.0", baudrate=5000000, timeout=2)
 
+# reset everything
+ubl.configure_loadsave(clearMask=0b1111100011111, deviceMask=0b10111)
+
 ubl.configure_poll_port()
 ubl.configure_poll(ublox.CLASS_CFG, ublox.MSG_CFG_USB)
 # ubl.configure_poll(navio.ublox.CLASS_MON, navio.ublox.MSG_MON_HW)
