@@ -48,13 +48,15 @@ if __name__ == "__main__":
                 continue
             print(empty)
             break
-        print(str(msg))
-        if msg.name() == "NAV_POSLLH":
-            outstr = str(msg).split(",")[1:]
-            outstr = "".join(outstr)
-            print(outstr)
-        if msg.name() == "NAV_STATUS":
-            outstr = str(msg).split(",")[1:2]
-            outstr = "".join(outstr)
-            print(outstr)
+        #print(str(msg))
+        #if msg.name() == "NAV_POSLLH":
+        #    outstr = str(msg).split(",")[1:]
+        #    outstr = "".join(outstr)
+        #    print(outstr)
+        #if msg.name() == "NAV_STATUS":
+        #    outstr = str(msg).split(",")[1:2]
+        #    outstr = "".join(outstr)
+        #    print(outstr)
+        if msg.name() == "MSG_NAV_DGPS":
+            print(msg)
         #print(str(msg))

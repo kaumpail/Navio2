@@ -114,7 +114,8 @@ with open('/home/pi/Navio2/Python/testrun_{}_IMU.txt'.format(fileending), 'w') a
             #     outstr = "".join(outstr)
             #     dat_gnss.write(str(t_a) + outstr + "\n")
             #     print(outstr)
-            dat_gnss.write(msg)
+            if msg.name()== "MSG_NAV_DGPS":
+                dat_gnss.write(msg)
 
             dat_baro.write("{}, {}, {}".format(t_a, baro.returnPressure(), baro.returnTemperature()))
 
