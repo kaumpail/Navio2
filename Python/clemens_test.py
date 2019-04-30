@@ -114,4 +114,4 @@ with open('/home/pi/Navio2/Python/testrun_{}_IMU.txt'.format(fileending), 'w') a
 
         # print(data)
         dat_imu.write(str(data) + "\n")
-        time.sleep(0.001)
+        time.sleep(0.005)
