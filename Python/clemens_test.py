@@ -68,6 +68,8 @@ ubl.set_preferred_usePPP(None)
 # ubl.configure_message_rate(ublox.CLASS_NAV, ublox.MSG_NAV_CLOCK, 5)
 # ubl.configure_message_rate(ublox.CLASS_NAV, ublox.MSG_NAV_DGPS, 1)
 
+time.sleep(20)
+
 t_s = time.time()
 
 # find new filename
@@ -91,7 +93,6 @@ with open('/home/pi/Navio2/Python/testrun_{}_IMU.txt'.format(fileending), 'w') a
     while True:
         t_a = time.time() - t_s
 
-
         mpudata_a, mpudata_g, mpudata_m = mpu.getMotion9()
         lsmdata_a, lsmdata_g, lsmdata_m = lsm.getMotion9()
 
@@ -108,7 +109,7 @@ with open('/home/pi/Navio2/Python/testrun_{}_IMU.txt'.format(fileending), 'w') a
                 print(empty)
                 break
             if msg.name() == "NAV_POSECEF":
-                dat_gnss.write("{}, {}\n".format(t_a, str(struct.unpack('<IiiiI', msg._buf[6:26])).replace("(", "").replace(")", "")))
+                dat_gnss.write("{}, {}\n".format(t_a, str(struct.unpack('<IiiiI', msg._buf[6:26]))))
 
             dat_baro.write("{}, {}, {}\n".format(t_a, baro.returnPressure(), baro.returnTemperature()))
 
@@ -116,5 +117,5 @@ with open('/home/pi/Navio2/Python/testrun_{}_IMU.txt'.format(fileending), 'w') a
         data = [t_a] + mpudata_a + mpudata_g + mpudata_m + lsmdata_a + lsmdata_g + lsmdata_m
 
         # print(data)
-        dat_imu.write(str(data).replace("(", "").replace(")", "") + "\n")
+        dat_imu.write(str(data) + "\n")
         time.sleep(0.005)
