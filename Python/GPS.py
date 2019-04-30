@@ -21,7 +21,7 @@ if __name__ == "__main__":
     # ubl.configure_poll_port(navio.ublox.PORT_SERIAL2)
     # ubl.configure_poll_port(navio.ublox.PORT_USB)
     ubl.configure_poll_port(navio.ublox.PORT_SPI)
-    ubl.configure_solution_rate(rate_ms=1000)
+    ubl.configure_solution_rate(rate_ms=200, nav_rate=5)
 
     ubl.set_preferred_dynamic_model(None)
     ubl.set_preferred_usePPP(None)
@@ -33,7 +33,7 @@ if __name__ == "__main__":
     # ubl.configure_message_rate(navio.ublox.CLASS_NAV, navio.ublox.MSG_NAV_VELNED, 1)
     # ubl.configure_message_rate(navio.ublox.CLASS_NAV, navio.ublox.MSG_NAV_SVINFO, 1)
     # ubl.configure_message_rate(navio.ublox.CLASS_NAV, navio.ublox.MSG_NAV_VELECEF, 1)
-    ubl.configure_message_rate(navio.ublox.CLASS_NAV, navio.ublox.MSG_NAV_POSECEF, 1)
+    # ubl.configure_message_rate(navio.ublox.CLASS_NAV, navio.ublox.MSG_NAV_POSECEF, 1)
     # ubl.configure_message_rate(navio.ublox.CLASS_RXM, navio.ublox.MSG_RXM_RAW, 1)
     # ubl.configure_message_rate(navio.ublox.CLASS_RXM, navio.ublox.MSG_RXM_SFRB, 1)
     # ubl.configure_message_rate(navio.ublox.CLASS_RXM, navio.ublox.MSG_RXM_SVSI, 1)
@@ -48,11 +48,11 @@ if __name__ == "__main__":
         if msg is None:
             if opts.reopen:
                 ubl.close()
-                ubl = navio.ublox.UBlox("spi:0.0", baudrate=5000000, timeout=2)
+                ubl = navio.ublox.UBlox("spi:0.0", baudrate=5000000)
                 continue
             print(empty)
             break
-        #print(str(msg))
+        print(str(msg))
         #if msg.name() == "NAV_POSLLH":
         #    outstr = str(msg).split(",")[1:]
         #    outstr = "".join(outstr)

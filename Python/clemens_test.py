@@ -13,8 +13,6 @@ from navio import ublox
 from navio.ms5611 import MS5611
 
 
-#UPDATE_RATE = 80.0    # Update Rate in Hz
-
 # Initialize sensors
 mpu = MPU9250()
 mpu.initialize()
@@ -31,22 +29,23 @@ else:
     print("Connection to one of the sensors is faulty.")
 
 # GNSS
-ubl = ublox.UBlox("spi:0.0", baudrate=5000000, timeout=2)
+ubl = ublox.UBlox("spi:0.0", baudrate=5000000)
 
 # reset everything
 ubl.configure_loadsave(clearMask=0b1111100011111, deviceMask=0b10111)
 
-ubl.configure_poll_port()
-ubl.configure_poll(ublox.CLASS_CFG, ublox.MSG_CFG_USB)
+#ubl.configure_poll_port()
+#ubl.configure_poll(ublox.CLASS_CFG, ublox.MSG_CFG_USB)
 # ubl.configure_poll(navio.ublox.CLASS_MON, navio.ublox.MSG_MON_HW)
 
-ubl.configure_port(port=ublox.PORT_SERIAL1, inMask=1, outMask=0)
-ubl.configure_port(port=ublox.PORT_USB, inMask=1, outMask=1)
-ubl.configure_port(port=ublox.PORT_SERIAL2, inMask=1, outMask=0)
-ubl.configure_poll_port()
-ubl.configure_poll_port(ublox.PORT_SERIAL1)
-ubl.configure_poll_port(ublox.PORT_SERIAL2)
-ubl.configure_poll_port(ublox.PORT_USB)
+#ubl.configure_port(port=ublox.PORT_SERIAL1, inMask=1, outMask=0)
+#ubl.configure_port(port=ublox.PORT_USB, inMask=1, outMask=1)
+#ubl.configure_port(port=ublox.PORT_SERIAL2, inMask=1, outMask=0)
+#ubl.configure_poll_port()
+#ubl.configure_poll_port(ublox.PORT_SERIAL1)
+#ubl.configure_poll_port(ublox.PORT_SERIAL2)
+#ubl.configure_poll_port(ublox.PORT_USB)
+ubl.configure_poll_port(ublox.PORT_SPI)
 ubl.configure_solution_rate(rate_ms=1000)
 
 ubl.set_preferred_dynamic_model(None)
