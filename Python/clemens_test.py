@@ -105,7 +105,7 @@ with open('/home/pi/Navio2/Python/testrun_{}_IMU.txt'.format(fileending), 'w') a
                 print(empty)
                 break
             if msg.name() == "NAV_POSECEF":
-                dat_gnss.write(struct.unpack('<IiiiI', msg._buf[5:25]))
+                dat_gnss.write(str(struct.unpack('<IiiiI', msg._buf[5:25])))
 
             dat_baro.write("{}, {}, {}".format(t_a, baro.returnPressure(), baro.returnTemperature()))
 
