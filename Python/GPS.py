@@ -57,7 +57,7 @@ if __name__ == "__main__":
         #    outstr = str(msg).split(",")[1:2]
         #    outstr = "".join(outstr)
         #    print(outstr)
-        if msg.name() == "NAV_DGPS":
+        if msg.name() == "NAV_POSECEF":
             print(msg)
         elif msg.name() == "NAV_VELECEF":
             print(msg)
