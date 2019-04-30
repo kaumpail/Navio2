@@ -55,7 +55,7 @@ ubl.set_preferred_usePPP(None)
 # ubl.configure_message_rate(ublox.CLASS_NAV, ublox.MSG_NAV_VELNED, 1)
 # ubl.configure_message_rate(ublox.CLASS_NAV, ublox.MSG_NAV_SVINFO, 1)
 # ubl.configure_message_rate(ublox.CLASS_NAV, ublox.MSG_NAV_VELECEF, 1)
-# ubl.configure_message_rate(ublox.CLASS_NAV, ublox.MSG_NAV_POSECEF, 1)
+ubl.configure_message_rate(ublox.CLASS_NAV, ublox.MSG_NAV_POSECEF, 1)
 # ubl.configure_message_rate(ublox.CLASS_RXM, ublox.MSG_RXM_RAW, 1)
 # ubl.configure_message_rate(ublox.CLASS_RXM, ublox.MSG_RXM_SFRB, 1)
 # ubl.configure_message_rate(ublox.CLASS_RXM, ublox.MSG_RXM_SVSI, 1)
@@ -63,7 +63,7 @@ ubl.set_preferred_usePPP(None)
 # ubl.configure_message_rate(ublox.CLASS_RXM, ublox.MSG_RXM_EPH, 1)
 # ubl.configure_message_rate(ublox.CLASS_NAV, ublox.MSG_NAV_TIMEGPS, 5)
 # ubl.configure_message_rate(ublox.CLASS_NAV, ublox.MSG_NAV_CLOCK, 5)
-ubl.configure_message_rate(ublox.CLASS_NAV, ublox.MSG_NAV_DGPS, 1)
+# ubl.configure_message_rate(ublox.CLASS_NAV, ublox.MSG_NAV_DGPS, 1)
 
 t_s = time.time()
 
@@ -81,7 +81,7 @@ with open('/home/pi/Navio2/Python/testrun_{}_IMU.txt'.format(fileending), 'w') a
                   'mpu_magn_1, mpu_magn_2, mpu_magn_3, '
                   'lsm_accel_1, lsm_accel_2, lsm_accel_3, lsm_gyro_1, lsm_gyro_2, lsm_gyro_3, '
                   'lsm_magn_1, lsm_magn_2, lsm_magn_3\n')
-    dat_gnss.write('t[s], gnss\n')
+    dat_gnss.write('t[s], iTOW, ecefX [cm], ecefY [cm], ecefZ [cm], pAcc\n')
     dat_baro.write('t[s], pressure [mbar], temperature [°C]\n')
 
     t_l = 0.0
@@ -104,18 +104,8 @@ with open('/home/pi/Navio2/Python/testrun_{}_IMU.txt'.format(fileending), 'w') a
                     continue
                 print(empty)
                 break
-            # if msg.name() == "NAV_POSLLH":
-            #     outstr = str(msg).split(",")[1:]
-            #     outstr = "".join(outstr)
-            #     dat_gnss.write(str(t_a) + outstr + "\n")
-            #     print(outstr)
-            # elif msg.name() == "NAV_STATUS":
-            #     outstr = str(msg).split(",")[1:2]
-            #     outstr = "".join(outstr)
-            #     dat_gnss.write(str(t_a) + outstr + "\n")
-            #     print(outstr)
             if msg.name() == "NAV_POSECEF":
-                dat_gnss.write(msg)
+                dat_gnss.write(struct.unpack('<IiiiI', msg._buf[5:25]))
 
             dat_baro.write("{}, {}, {}".format(t_a, baro.returnPressure(), baro.returnTemperature()))
 
