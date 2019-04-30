@@ -888,8 +888,11 @@ class UBlox:
                     time.sleep(0.01)
                     continue
                 return None
-            if self.use_xfer: 
-                b = "".join([chr(c) for c in b]) # here str
+            if self.use_xfer:
+                bb = bytearray()
+                for c in b:
+                    bb.append(c)
+                b = bb
             msg.add(b)
             if self.log is not None:
                 self.log.write(b)
