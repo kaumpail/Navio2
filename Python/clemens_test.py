@@ -110,16 +110,16 @@ with open('/home/pi/Navio2/Python/testrun_{}_IMU.txt'.format(fileending), 'w', 1
                 print(empty)
                 break
             if msg.name() == "NAV_POSECEF":
-                dat_gnss.append("{}, {}".format(t_a, str(struct.unpack('<IiiiI', msg._buf[6:26])).replace("(", "").replace(")", "")))
+                dat_gnss.write("{}, {}\n".format(t_a, str(struct.unpack('<IiiiI', msg._buf[6:26])).replace("(", "").replace(")", "")))
                 # dat_gnss.flush()
 
-            dat_baro.append("{}, {}, {}".format(t_a, baro.returnPressure(), baro.returnTemperature()))
+            dat_baro.write("{}, {}, {}\n".format(t_a, baro.returnPressure(), baro.returnTemperature()))
             # dat_baro.flush()
 
         data = [t_a] + mpudata_a + mpudata_g + mpudata_m + lsmdata_a + lsmdata_g + lsmdata_m
 
         # print(data)
-        dat_imu.write(str(data).replace("[", "").replace("]", ""))
+        dat_imu.write(str(data).replace("[", "").replace("]", "") + "\n")
         # dat_imu.flush()
 
         time.sleep(0.005) # sleep time to restrict update rate
