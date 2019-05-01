@@ -126,6 +126,7 @@ while True:
 
     # Write data to file every 10 seconds
     if t_a - t_l2 > 10.0:
+        t_l2 = t_a
         with open('/home/pi/Navio2/Python/testrun_{}_IMU.txt'.format(fileending), 'a') as dat_imu, \
                 open('/home/pi/Navio2/Python/testrun_{}_GNSS.txt'.format(fileending), 'a') as dat_gnss, \
                 open('/home/pi/Navio2/Python/testrun_{}_baro.txt'.format(fileending), 'a') as dat_baro:
