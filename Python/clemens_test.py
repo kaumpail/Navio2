@@ -85,7 +85,7 @@ with open('/home/pi/Navio2/Python/testrun_{}_IMU.txt'.format(fileending), 'w', 1
                   'mpu_magn_1, mpu_magn_2, mpu_magn_3, '
                   'lsm_accel_1, lsm_accel_2, lsm_accel_3, lsm_gyro_1, lsm_gyro_2, lsm_gyro_3, '
                   'lsm_magn_1, lsm_magn_2, lsm_magn_3\n')
-    dat_gnss.write('t[s], iTOW, ecefX [cm], ecefY [cm], ecefZ [cm], pAcc\n')
+    dat_gnss.write('t[s], iTOW [ms], lon [lon], lat [deg], height [mm], height above mean see level [mm], Horizontal accuracy estimate [mm], Vertical accuracy estimate [mm]\n')
     dat_baro.write('t[s], pressure [mbar], temperature [°C]\n')
 
     # Main loop
@@ -110,6 +110,7 @@ with open('/home/pi/Navio2/Python/testrun_{}_IMU.txt'.format(fileending), 'w', 1
                 print(empty)
                 break
             if msg.name() == "NAV_POSLLH":
+                print(msg._buf)
                 dat_gnss.write("{}, {}\n".format(t_a, str(struct.unpack('<IiiiiII', msg._buf[6:34])).replace("(", "").replace(")", "")))
                 # dat_gnss.flush()
 
