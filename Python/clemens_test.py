@@ -51,14 +51,14 @@ ubl.configure_solution_rate(rate_ms=200, nav_rate=5)
 ubl.set_preferred_dynamic_model(None)
 ubl.set_preferred_usePPP(None)
 
-# ubl.configure_message_rate(ublox.CLASS_NAV, ublox.MSG_NAV_POSLLH, 1)
+ubl.configure_message_rate(ublox.CLASS_NAV, ublox.MSG_NAV_POSLLH, 1)
 # ubl.configure_message_rate(ublox.CLASS_NAV, ublox.MSG_NAV_PVT, 1)
 # ubl.configure_message_rate(ublox.CLASS_NAV, ublox.MSG_NAV_STATUS, 1)
 # ubl.configure_message_rate(ublox.CLASS_NAV, ublox.MSG_NAV_SOL, 1)
 # ubl.configure_message_rate(ublox.CLASS_NAV, ublox.MSG_NAV_VELNED, 1)
 # ubl.configure_message_rate(ublox.CLASS_NAV, ublox.MSG_NAV_SVINFO, 1)
 # ubl.configure_message_rate(ublox.CLASS_NAV, ublox.MSG_NAV_VELECEF, 1)
-ubl.configure_message_rate(ublox.CLASS_NAV, ublox.MSG_NAV_POSECEF, 1)
+# ubl.configure_message_rate(ublox.CLASS_NAV, ublox.MSG_NAV_POSECEF, 1)
 # ubl.configure_message_rate(ublox.CLASS_RXM, ublox.MSG_RXM_RAW, 1)
 # ubl.configure_message_rate(ublox.CLASS_RXM, ublox.MSG_RXM_SFRB, 1)
 # ubl.configure_message_rate(ublox.CLASS_RXM, ublox.MSG_RXM_SVSI, 1)
@@ -109,8 +109,8 @@ with open('/home/pi/Navio2/Python/testrun_{}_IMU.txt'.format(fileending), 'w', 1
                     continue
                 print(empty)
                 break
-            if msg.name() == "NAV_POSECEF":
-                dat_gnss.write("{}, {}\n".format(t_a, str(struct.unpack('<IiiiI', msg._buf[6:26])).replace("(", "").replace(")", "")))
+            if msg.name() == "NAV_POSLLH":
+                dat_gnss.write("{}, {}\n".format(t_a, str(struct.unpack('<IiiiiII', msg._buf[6:34])).replace("(", "").replace(")", "")))
                 # dat_gnss.flush()
 
             dat_baro.write("{}, {}, {}\n".format(t_a, baro.returnPressure(), baro.returnTemperature()))
