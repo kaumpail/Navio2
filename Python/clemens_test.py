@@ -132,5 +132,7 @@ if __name__ == "__main__":
 
     try:
         main()
+    except KeyboardInterrupt:
+        led.setColor('Yellow')
     except Exception:
         led.setColor('Red')
