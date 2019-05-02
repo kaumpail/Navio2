@@ -88,7 +88,7 @@ def main():
                       'lsm_accel_1, lsm_accel_2, lsm_accel_3, lsm_gyro_1, lsm_gyro_2, lsm_gyro_3, '
                       'lsm_magn_1, lsm_magn_2, lsm_magn_3\n')
         dat_gnss_pos_lla.write('t[s], iTOW [ms], lon [lon], lat [deg], height [mm], height above mean see level [mm], Horizontal accuracy estimate [mm], Vertical accuracy estimate [mm]\n')
-        dat_gnss_pos_lla.write('t[s], iTOW [ms], velN [cm/s], velE [cm/s], velD [cm/s], speed [cm/s], groundspeed [cm/s], heading [deg], sAcc [cm/s], cAcc [deg]\n')
+        dat_gnss_vel_ned.write('t[s], iTOW [ms], velN [cm/s], velE [cm/s], velD [cm/s], speed [cm/s], groundspeed [cm/s], heading [deg], sAcc [cm/s], cAcc [deg]\n')
         dat_baro.write('t[s], pressure [mbar], temperature [°C]\n')
 
         # Main loop
@@ -134,5 +134,5 @@ if __name__ == "__main__":
         main()
     except KeyboardInterrupt:
         led.setColor('Yellow')
-    except Exception:
+    except:
         led.setColor('Red')
