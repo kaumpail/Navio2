@@ -227,7 +227,7 @@ class LSM9DS1:
         return rx[1:len(rx)]
 
     def initialize(self):
-        #--------Accelerometer and Gyroscope---------
+        # --------Accelerometer and Gyroscope---------
         # enable the 3-axes of the gyroscope
         self.writeReg(self.__DEVICE_ACC_GYRO, self.__LSM9DS1XG_CTRL_REG4, self.__BITS_XEN_G | self.__BITS_YEN_G | self.__BITS_ZEN_G)
         # configure the gyroscope
@@ -240,7 +240,7 @@ class LSM9DS1:
         self.writeReg(self.__DEVICE_ACC_GYRO, self.__LSM9DS1XG_CTRL_REG6_XL, self.__BITS_ODR_XL_952HZ | self.__BITS_FS_XL_16G)
         time.sleep(0.1)
 
-        #------------Magnetometer----------------
+        # ------------Magnetometer----------------
         self.writeReg(self.__DEVICE_MAGNETOMETER, self.__LSM9DS1M_CTRL_REG1_M, self.__BITS_TEMP_COMP | self.__BITS_OM_HIGH | self.__BITS_ODR_M_80HZ)
         self.writeReg(self.__DEVICE_MAGNETOMETER, self.__LSM9DS1M_CTRL_REG2_M, self.__BITS_FS_M_16Gs)
         # continuous conversion mode
@@ -307,10 +307,10 @@ class LSM9DS1:
         # Read magnetometer
         response = self.readRegs(self.__DEVICE_MAGNETOMETER, self.__LSM9DS1M_OUT_X_L_M, 6)
         for i in range(3):
-            self.magnetometer_data[i] = 100.0 * (self.byte_to_float_le(response[2*i:2*i+2]) * self.mag_scale)
+            self.magnetometer_data[i] = (self.byte_to_float_le(response[2*i:2*i+2]) * self.mag_scale)
 
-        self.magnetometer_data[1] *=-1
-        self.magnetometer_data[2] *=-1
+        self.magnetometer_data[1] *= -1
+        self.magnetometer_data[2] *= -1
 
     def read_temp(self):
         # Read temperature
@@ -335,7 +335,7 @@ class LSM9DS1:
         # Read magnetometer
         response = self.readRegs(self.__DEVICE_MAGNETOMETER, self.__LSM9DS1M_OUT_X_L_M, 6)
         for i in range(3):
-            self.magnetometer_data[i] = 100.0 * (self.byte_to_float_le(response[2*i:2*i+2]) * self.mag_scale)
+            self.magnetometer_data[i] = (self.byte_to_float_le(response[2*i:2*i+2]) * self.mag_scale)
 
         # Change rotation of LSM9DS1 like in MPU-9250
         self.rotate()
