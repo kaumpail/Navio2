@@ -1,7 +1,6 @@
 #!/usr/bin/env python3.5
 
 import os
-import spidev
 import time
 import sys
 import struct
@@ -85,10 +84,13 @@ def main():
         # write headers to file
         dat_imu.write('t[s], mpu_accel_1, mpu_accel_2, mpu_accel_3, mpu_gyro_1, mpu_gyro_2, mpu_gyro_3, '
                       'mpu_magn_1, mpu_magn_2, mpu_magn_3, '
-                      'lsm_accel_1, lsm_accel_2, lsm_accel_3, lsm_gyro_1, lsm_gyro_2, lsm_gyro_3, '
-                      'lsm_magn_1, lsm_magn_2, lsm_magn_3\n')
-        dat_gnss_pos_lla.write('t[s], iTOW [ms], lon [lon], lat [deg], height [mm], height above mean see level [mm], Horizontal accuracy estimate [mm], Vertical accuracy estimate [mm]\n')
-        dat_gnss_vel_ned.write('t[s], iTOW [ms], velN [cm/s], velE [cm/s], velD [cm/s], speed [cm/s], groundspeed [cm/s], heading [deg], sAcc [cm/s], cAcc [deg]\n')
+                      'lsm_accel_1 [m/s], lsm_accel_2 [m/s], lsm_accel_3 [m/s], '
+                      'lsm_gyro_1 [rad/s], lsm_gyro_2 [rad/s], lsm_gyro_3 [rad/s], '
+                      'lsm_magn_1 [gauss], lsm_magn_2 [gauss], lsm_magn_3 [gauss]\n')
+        dat_gnss_pos_lla.write('t[s], iTOW [ms], lon [lon], lat [deg], height [mm], height above mean see level [mm], '
+                               'Horizontal accuracy estimate [mm], Vertical accuracy estimate [mm]\n')
+        dat_gnss_vel_ned.write('t[s], iTOW [ms], velN [cm/s], velE [cm/s], velD [cm/s], speed [cm/s], '
+                               'groundspeed [cm/s], heading [deg], sAcc [cm/s], cAcc [deg]\n')
         dat_baro.write('t[s], pressure [mbar], temperature [°C]\n')
 
         # Main loop
@@ -110,7 +112,7 @@ def main():
                     dat_gnss_pos_lla.write("{}, {}\n".format(t_a, str(struct.unpack('<IiiiiII', msg._buf[6:34])).replace("(", "").replace(")", "")))
                     # dat_gnss.flush()
                 elif msg.name() == "NAV_VELNED":
-                    dat_gnss_vel_ned.write("{}, {}\n".format(t_a, str(struct.unpack('<IiiiIIiII', msg._buf[6:42])).replace("(","").replace(")", "")))
+                    dat_gnss_vel_ned.write("{}, {}\n".format(t_a, str(struct.unpack('<IiiiIIiII', msg._buf[6:42])).replace("(", "").replace(")", "")))
 
 
                 dat_baro.write("{}, {}, {}\n".format(t_a, baro.returnPressure(), baro.returnTemperature()))
