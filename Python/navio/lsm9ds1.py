@@ -30,7 +30,7 @@ import array
 import struct
 
 
-class LSM9DS1:
+class LSM9DS1(object):
 
     __DEVICE_ACC_GYRO = 3
     __DEVICE_MAGNETOMETER = 2

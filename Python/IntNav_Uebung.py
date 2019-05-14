@@ -19,6 +19,9 @@ def main():
 
     lsm = LSM9DS1()
     lsm.initialize()
+    lsm.set_acc_scale(0x10)     # +/-4G
+    lsm.set_gyro_scale(0x00)    # +/-245dps
+    lsm.set_mag_scale(0x20)     # +/-8Gs
 
     baro = MS5611()
 
