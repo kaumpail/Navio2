@@ -258,34 +258,40 @@ class LSM9DS1(object):
         self.writeReg(self.__DEVICE_ACC_GYRO, self.__LSM9DS1XG_CTRL_REG1_G, reg | scale)
         if scale == self.__BITS_FS_G_245DPS:
             self.gyro_scale = 0.00875
-        if scale == self.__BITS_FS_G_500DPS:
+        elif scale == self.__BITS_FS_G_500DPS:
             self.gyro_scale = 0.0175
-        if scale == self.__BITS_FS_G_2000DPS:
+        elif scale == self.__BITS_FS_G_2000DPS:
             self.gyro_scale = 0.07
+        else:
+            raise ValueError("Not allowed gyro scale")
 
     def set_acc_scale(self, scale):
         reg = self.__BITS_FS_XL_MASK & self.readReg(self.__DEVICE_ACC_GYRO, self.__LSM9DS1XG_CTRL_REG6_XL)
         self.writeReg(self.__DEVICE_ACC_GYRO, self.__LSM9DS1XG_CTRL_REG6_XL, reg | scale)
         if scale == self.__BITS_FS_XL_2G:
             self.acc_scale = 0.000061
-        if scale == self.__BITS_FS_XL_4G:
+        elif scale == self.__BITS_FS_XL_4G:
             self.acc_scale = 0.000122
-        if scale == self.__BITS_FS_XL_8G:
+        elif scale == self.__BITS_FS_XL_8G:
             self.acc_scale = 0.000244
-        if scale == self.__BITS_FS_XL_16G:
+        elif scale == self.__BITS_FS_XL_16G:
             self.acc_scale = 0.000732
+        else:
+            raise ValueError("Not allowed accelerometer scale")
 
     def set_mag_scale(self, scale):
         reg = self.__BITS_FS_M_MASK & self.readReg(self.__DEVICE_MAGNETOMETER, self.__LSM9DS1M_CTRL_REG2_M)
         self.writeReg(self.__DEVICE_MAGNETOMETER, self.__LSM9DS1M_CTRL_REG2_M, reg | scale)
         if scale == self.__BITS_FS_M_4Gs:
             self.mag_scale = 0.00014
-        if scale == self.__BITS_FS_M_8Gs:
+        elif scale == self.__BITS_FS_M_8Gs:
             self.mag_scale = 0.00029
-        if scale == self.__BITS_FS_M_12Gs:
+        elif scale == self.__BITS_FS_M_12Gs:
             self.mag_scale = 0.00043
-        if scale == self.__BITS_FS_M_16Gs:
+        elif scale == self.__BITS_FS_M_16Gs:
             self.mag_scale = 0.00058
+        else:
+            raise ValueError("Not allowed magnetometer scale")
 
     def read_acc(self):
         # Read accelerometer
