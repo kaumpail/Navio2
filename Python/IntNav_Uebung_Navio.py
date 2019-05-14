@@ -1,4 +1,4 @@
-#!/usr/bin/env python3.5
+#!/usr/bin/env python3
 
 import os
 import time
@@ -14,6 +14,7 @@ from navio.leds import Led
 
 def main():
     # Initialize sensors
+    #   Initialize IMUs
     mpu = MPU9250()
     mpu.initialize()
 
@@ -23,20 +24,19 @@ def main():
     lsm.set_gyro_scale(0x00)    # +/-245dps
     lsm.set_mag_scale(0x20)     # +/-8Gs
 
-    baro = MS5611()
-
-    time.sleep(0.1)
-
-    # Test connection:
+    #     Test connection:
     if mpu.testConnection() and lsm.testConnection():
         print("Connection working.")
     else:
         print("Connection to one of the sensors is faulty.")
 
-    # GNSS
+    #   Initialize barometer
+    baro = MS5611()
+
+    #   initialize UBlox
     ubl = ublox.UBlox("spi:0.0", baudrate=5000000)
 
-    # reset everything
+    #     reset everything
     ubl.configure_loadsave(clearMask=0b1111100011111, deviceMask=0b10111)
 
     #ubl.configure_poll_port()
