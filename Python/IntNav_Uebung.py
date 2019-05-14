@@ -25,6 +25,8 @@ def main():
 
     baro = MS5611()
 
+    time.sleep(0.1)
+
     # Test connection:
     if mpu.testConnection() and lsm.testConnection():
         print("Connection working.")
@@ -70,6 +72,8 @@ def main():
     # ubl.configure_message_rate(ublox.CLASS_NAV, ublox.MSG_NAV_TIMEGPS, 5)
     # ubl.configure_message_rate(ublox.CLASS_NAV, ublox.MSG_NAV_CLOCK, 5)
     # ubl.configure_message_rate(ublox.CLASS_NAV, ublox.MSG_NAV_DGPS, 1)
+
+    time.sleep(0.1)
 
     t_s = time.time()
 
