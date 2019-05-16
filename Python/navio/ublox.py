@@ -926,10 +926,10 @@ class UBlox:
         if not msg.valid():
             self.debug(1, "invalid send")
             return
-        if not self.read_only:
-            bytes_written = self.write(msg._buf)
-            if bytes_written != len(msg._buf):
-                raise ValueError("Less bytes written than should be sent.\n msg: {}\n bytes: {}".format(msg, bytes_written))
+        #if not self.read_only:
+        return self.write(msg._buf)
+        #    if bytes_written != len(msg._buf):
+        #        raise ValueError("Less bytes written than should be sent.\n msg: {}\n bytes: {}".format(msg, bytes_written))
 
     def send_message(self, msg_class, msg_id, payload):
         """send a ublox message with class, id and payload"""
