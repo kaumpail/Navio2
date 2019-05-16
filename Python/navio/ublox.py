@@ -31,12 +31,12 @@ MSG_ACK_NACK = 0x00
 MSG_ACK_ACK = 0x01
 
 # NAV messages
-MSG_NAV_POSECEF   = 0x1
-MSG_NAV_POSLLH    = 0x2
-MSG_NAV_STATUS    = 0x3
-MSG_NAV_DOP       = 0x4
-MSG_NAV_SOL       = 0x6
-MSG_NAV_POSUTM    = 0x8
+MSG_NAV_POSECEF   = 0x01
+MSG_NAV_POSLLH    = 0x02
+MSG_NAV_STATUS    = 0x03
+MSG_NAV_DOP       = 0x04
+MSG_NAV_SOL       = 0x06
+MSG_NAV_POSUTM    = 0x08
 MSG_NAV_VELNED    = 0x12
 MSG_NAV_VELECEF   = 0x11
 MSG_NAV_TIMEGPS   = 0x20
@@ -69,38 +69,39 @@ MSG_AID_INI    = 0x01
 MSG_AID_REQ    = 0x00
 
 # CFG messages
-MSG_CFG_PRT = 0x00
-MSG_CFG_ANT = 0x13
-MSG_CFG_DAT = 0x06
-MSG_CFG_EKF = 0x12
+MSG_CFG_PRT =    0x00
+MSG_CFG_ANT =    0x13
+MSG_CFG_DAT =    0x06
+MSG_CFG_EKF =    0x12
 MSG_CFG_ESFGWT = 0x29
-MSG_CFG_CFG = 0x09
-MSG_CFG_USB = 0x1b
-MSG_CFG_RATE = 0x08
+MSG_CFG_CFG =    0x09
+MSG_CFG_USB =    0x1b
+MSG_CFG_RATE =   0x08
 MSG_CFG_SET_RATE = 0x01
-MSG_CFG_NAV5 = 0x24
-MSG_CFG_FXN = 0x0E
-MSG_CFG_INF = 0x02
-MSG_CFG_ITFM = 0x39
-MSG_CFG_MSG = 0x01
-MSG_CFG_NAVX5 = 0x23
-MSG_CFG_NMEA = 0x17
-MSG_CFG_NVS = 0x22
-MSG_CFG_PM2 = 0x3B
-MSG_CFG_PM = 0x32
-MSG_CFG_RINV = 0x34
-MSG_CFG_RST = 0x04
-MSG_CFG_RXM = 0x11
-MSG_CFG_SBAS = 0x16
+MSG_CFG_NAV5 =   0x24
+MSG_CFG_FXN =    0x0E
+MSG_CFG_INF =    0x02
+MSG_CFG_ITFM =   0x39
+MSG_CFG_MSG =    0x01
+MSG_CFG_NAVX5 =  0x23
+MSG_CFG_NMEA =   0x17
+MSG_CFG_NVS =    0x22
+MSG_CFG_PM2 =    0x3B
+MSG_CFG_PM =     0x32
+MSG_CFG_RINV =   0x34
+MSG_CFG_RST =    0x04
+MSG_CFG_RXM =    0x11
+MSG_CFG_SBAS =   0x16
 MSG_CFG_TMODE2 = 0x3D
-MSG_CFG_TMODE = 0x1D
-MSG_CFG_TPS = 0x31
-MSG_CFG_TP = 0x07
-MSG_CFG_GNSS = 0x3E
+MSG_CFG_TMODE =  0x1D
+MSG_CFG_TPS =    0x31
+MSG_CFG_TP =     0x07
+MSG_CFG_GNSS =   0x3E
 
 # ESF messages
 MSG_ESF_MEAS   = 0x02
 MSG_ESF_STATUS = 0x10
+MSG_ESF_RAW    = 0x03
 
 # INF messages
 MSG_INF_DEBUG  = 0x04
@@ -534,7 +535,9 @@ msg_types = {
                                                   ['dur', 'meanX', 'meanY', 'meanZ', 'meanV',
                                                    'obs', 'valid', 'active', 'reserved1']),
     (CLASS_INF, MSG_INF_ERROR)  : UBloxDescriptor('INF_ERR', '<18s', ['str']),
-    (CLASS_INF, MSG_INF_DEBUG)  : UBloxDescriptor('INF_DEBUG', '<18s', ['str'])
+    (CLASS_INF, MSG_INF_DEBUG)  : UBloxDescriptor('INF_DEBUG', '<18s', ['str']),
+    (CLASS_ESF, MSG_ESF_RAW)    : UBloxDescriptor('ESF_RAW',
+                                                  '<BBBB')
 }
 
 
@@ -605,7 +608,7 @@ class UBloxMessage:
             raise UBloxError('INVALID MESSAGE')
         type = self.msg_type()
         if not type in msg_types:
-            raise UBloxError('Unknown message %s length=%u' % (str(type), len(self._buf)))
+            raise UBloxError('Unknown message %s length=%u\n Message: %s' % (str(type), len(self._buf), self._buf))
         return msg_types[type].name
     
     def msg_class(self):
@@ -711,7 +714,7 @@ class UBlox:
         elif os.path.isfile(self.serial_device):
             self.read_only = True
             self.dev = open(self.serial_device, mode='rb')
-        if self.serial_device.startswith("spi:"):
+        elif self.serial_device.startswith("spi:"):
             import spidev
             bus, cs = map(int, self.serial_device.split(':')[1].split('.'))
             # print(bus, cs)
@@ -798,7 +801,10 @@ class UBlox:
                     else:
                         spiBuf.append(b)
                 return self.dev.xfer2(spiBuf)
-            return self.dev.write(buf)
+            else:
+                return self.dev.write(buf)
+        else:
+            raise ValueError("Port is set to read-only mode")
 
     def read(self, n):
         """read some bytes"""
@@ -863,7 +869,8 @@ class UBlox:
                 self.send(msg)
                 if pollit:
                     self.configure_poll(CLASS_CFG, MSG_CFG_NAV5)
-        if msg.name() == 'CFG_NAVX5' and self.preferred_usePPP is not None:
+
+        elif msg.name() == 'CFG_NAVX5' and self.preferred_usePPP is not None:
             msg.unpack()
             if msg.usePPP != self.preferred_usePPP:
                 msg.usePPP = self.preferred_usePPP
@@ -920,7 +927,9 @@ class UBlox:
             self.debug(1, "invalid send")
             return
         if not self.read_only:
-            self.write(msg._buf)        
+            bytes_written = self.write(msg._buf)
+            if bytes_written != len(msg._buf):
+                raise ValueError("Less bytes written than should be sent.")
 
     def send_message(self, msg_class, msg_id, payload):
         """send a ublox message with class, id and payload"""
@@ -931,7 +940,30 @@ class UBlox:
 
         (ck_a, ck_b) = msg.checksum(msg._buf[2:])
         msg._buf += struct.pack('<BB', ck_a, ck_b)
+
         self.send(msg)
+
+        # Wait for response:
+        while True:
+            return_msg = self.receive_message()
+            if return_msg is not None:
+                if return_msg.name() == "ACK_ACK":
+                    print(return_msg)
+                    if return_msg._fields['clsID'] == msg_class and return_msg._fields['msgID'] == msg_id:
+                        if self.debug_level == 1:
+                            print("Receiving of message {} was confirmed by ublox device".format(msg._buf))
+                        break
+                    else:
+                        raise ValueError("ACK_ACK return message not fitting to sent message. \n"
+                                         " Sent message class & id: {}\n"
+                                         " Received: {}".format((msg_class, msg_id), return_msg.msg_type()))
+                elif return_msg.name() == "ACK_NAK":
+                    raise ValueError("Device sent ACK_NAK message back. Message invalid or somethings is going wrong."
+                                     "Sent Message: {}".format(msg._fields, (msg_class, msg_id)))
+                else:
+                    continue
+
+            time.sleep(0.05)
 
     def configure_solution_rate(self, rate_ms=200, nav_rate=1, timeref=0):
         """configure the solution rate in milliseconds"""

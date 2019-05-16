@@ -16,7 +16,9 @@ def main():
     # Initialize sensors
     #   Initialize IMUs
     mpu = MPU9250()
-    mpu.initialize()
+    mpu.initialize(low_pass_filter=1)
+    mpu.set_acc_scale(0x08)       # +/-4G
+    mpu.set_gyro_scale(0x08)      # +/-500dps
 
     lsm = LSM9DS1()
     lsm.initialize()
@@ -131,7 +133,7 @@ def main():
             dat_imu.write(str(data).replace("[", "").replace("]", "") + "\n")
             # dat_imu.flush()
 
-            time.sleep(0.005) # sleep time to restrict update rate
+            time.sleep(0.005)  # sleep time to restrict update rate
 
 
 if __name__ == "__main__":

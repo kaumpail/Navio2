@@ -134,8 +134,8 @@ class MPU9250:
     __MPUREG_I2C_MST_DELAY_CTRL  = 0x67
     __MPUREG_SIGNAL_PATH_RESET   = 0x68
     __MPUREG_MOT_DETECT_CTRL     = 0x69
-    __MPUREG_USER_CTRL = 0x6A
-    __MPUREG_PWR_MGMT_1 = 0x6B
+    __MPUREG_USER_CTRL =           0x6A
+    __MPUREG_PWR_MGMT_1 =          0x6B
     __MPUREG_PWR_MGMT_2 = 0x6C
     __MPUREG_BANK_SEL = 0x6D
     __MPUREG_MEM_START_ADDR = 0x6E
@@ -310,7 +310,7 @@ class MPU9250:
 # returns 1 if an error occurred
 # -----------------------------------------------------------------------------------------------
 
-    def initialize(self, sample_rate_div = 1, low_pass_filter = 0x01):
+    def initialize(self, sample_rate_div=1, low_pass_filter=0x01):
         MPU_InitRegNum = 17
         MPU_Init_Data = [[0, 0]] * MPU_InitRegNum
 
@@ -321,7 +321,7 @@ class MPU9250:
         [low_pass_filter, self.__MPUREG_CONFIG],   # Use DLPF set Gyroscope bandwidth 184Hz, temperature bandwidth 188Hz
         [0x18, self.__MPUREG_GYRO_CONFIG],         # +-2000dps
         [0x08, self.__MPUREG_ACCEL_CONFIG],        # +-4G
-        [0x09, self.__MPUREG_ACCEL_CONFIG_2],      # Set Acc Data Rates, Enable Acc LPF , Bandwidth 184Hz
+        [0x01, self.__MPUREG_ACCEL_CONFIG_2],      # Set Acc Data Rates, Enable Acc LPF , Bandwidth 184Hz # Todo recheck if this enables it
         [0x30, self.__MPUREG_INT_PIN_CFG],
         #[0x40, self.__MPUREG_I2C_MST_CTRL],       # I2C Speed 348 kHz
         #[0x20, self.__MPUREG_USER_CTRL],          # Enable AUX
