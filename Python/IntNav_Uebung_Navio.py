@@ -59,21 +59,7 @@ def main():
     ubl.set_preferred_usePPP(None)
 
     ubl.configure_message_rate(ublox.CLASS_NAV, ublox.MSG_NAV_POSLLH, 1)
-    # ubl.configure_message_rate(ublox.CLASS_NAV, ublox.MSG_NAV_PVT, 1)
-    # ubl.configure_message_rate(ublox.CLASS_NAV, ublox.MSG_NAV_STATUS, 1)
-    # ubl.configure_message_rate(ublox.CLASS_NAV, ublox.MSG_NAV_SOL, 1)
     ubl.configure_message_rate(ublox.CLASS_NAV, ublox.MSG_NAV_VELNED, 1)
-    # ubl.configure_message_rate(ublox.CLASS_NAV, ublox.MSG_NAV_SVINFO, 1)
-    # ubl.configure_message_rate(ublox.CLASS_NAV, ublox.MSG_NAV_VELECEF, 1)
-    # ubl.configure_message_rate(ublox.CLASS_NAV, ublox.MSG_NAV_POSECEF, 1)
-    # ubl.configure_message_rate(ublox.CLASS_RXM, ublox.MSG_RXM_RAW, 1)
-    # ubl.configure_message_rate(ublox.CLASS_RXM, ublox.MSG_RXM_SFRB, 1)
-    # ubl.configure_message_rate(ublox.CLASS_RXM, ublox.MSG_RXM_SVSI, 1)
-    # ubl.configure_message_rate(ublox.CLASS_RXM, ublox.MSG_RXM_ALM, 1)
-    # ubl.configure_message_rate(ublox.CLASS_RXM, ublox.MSG_RXM_EPH, 1)
-    # ubl.configure_message_rate(ublox.CLASS_NAV, ublox.MSG_NAV_TIMEGPS, 5)
-    # ubl.configure_message_rate(ublox.CLASS_NAV, ublox.MSG_NAV_CLOCK, 5)
-    # ubl.configure_message_rate(ublox.CLASS_NAV, ublox.MSG_NAV_DGPS, 1)
 
     time.sleep(0.1)
 
@@ -81,14 +67,14 @@ def main():
 
     # find new filename
     fileending=1
-    while os.path.isfile('/home/pi/Navio2/Python/testrun_{}_IMU.txt'.format(fileending)) is True:
+    while os.path.isfile('/home/pi/Navio2/Python/datafile_{}_IMU.txt'.format(fileending)) is True:
         fileending += 1
 
     # open('', '', 1) enables line buffering
-    with open('/home/pi/Navio2/Python/testrun_{}_IMU.txt'.format(fileending), 'w', 1) as dat_imu, \
-            open('/home/pi/Navio2/Python/testrun_{}_GNSS_pos_lla.txt'.format(fileending), 'w', 1) as dat_gnss_pos_lla, \
-            open('/home/pi/Navio2/Python/testrun_{}_GNSS_vel_ned.txt'.format(fileending), 'w', 1) as dat_gnss_vel_ned, \
-            open('/home/pi/Navio2/Python/testrun_{}_baro.txt'.format(fileending), 'w', 1) as dat_baro:
+    with open('/home/pi/Navio2/Python/datafile_{}_IMU.txt'.format(fileending), 'w', 1) as dat_imu, \
+            open('/home/pi/Navio2/Python/datafile_{}_GNSS_pos_lla.txt'.format(fileending), 'w', 1) as dat_gnss_pos_lla, \
+            open('/home/pi/Navio2/Python/datafile_{}_GNSS_vel_ned.txt'.format(fileending), 'w', 1) as dat_gnss_vel_ned, \
+            open('/home/pi/Navio2/Python/datafile_{}_baro.txt'.format(fileending), 'w', 1) as dat_baro:
 
         # write headers to file
         dat_imu.write('t[s], mpu_accel_1, mpu_accel_2, mpu_accel_3, mpu_gyro_1, mpu_gyro_2, mpu_gyro_3, '
@@ -96,14 +82,13 @@ def main():
                       'lsm_accel_1 [m/s], lsm_accel_2 [m/s], lsm_accel_3 [m/s], '
                       'lsm_gyro_1 [rad/s], lsm_gyro_2 [rad/s], lsm_gyro_3 [rad/s], '
                       'lsm_magn_1 [gauss], lsm_magn_2 [gauss], lsm_magn_3 [gauss]\n')
-        dat_gnss_pos_lla.write('t[s], iTOW [ms], lon [lon], lat [deg], height [mm], height above mean see level [mm], '
+        dat_gnss_pos_lla.write('t[s], iTOW [ms], lon [1e-7 lon], lat [1e-7 deg], height [mm], height above mean see level [mm], '
                                'Horizontal accuracy estimate [mm], Vertical accuracy estimate [mm]\n')
         dat_gnss_vel_ned.write('t[s], iTOW [ms], velN [cm/s], velE [cm/s], velD [cm/s], speed [cm/s], '
-                               'groundspeed [cm/s], heading [deg], sAcc [cm/s], cAcc [deg]\n')
+                               'groundspeed [cm/s], heading [1e-5 deg], sAcc [cm/s], cAcc [1e-5 deg]\n')
         dat_baro.write('t[s], pressure [mbar], temperature [°C]\n')
 
         # Main loop
-
         t_l = 0.0  # time of last gnss & baro measurement
         while True:
             t_a = time.time() - t_s
@@ -122,7 +107,6 @@ def main():
                     # dat_gnss.flush()
                 elif msg.name() == "NAV_VELNED":
                     dat_gnss_vel_ned.write("{}, {}\n".format(t_a, str(struct.unpack('<IiiiIIiII', msg._buf[6:42])).replace("(", "").replace(")", "")))
-
 
                 dat_baro.write("{}, {}, {}\n".format(t_a, baro.returnPressure(), baro.returnTemperature()))
                 # dat_baro.flush()
