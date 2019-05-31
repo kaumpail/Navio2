@@ -8,7 +8,7 @@ import os
 def main():
 
     # initialize UBlox
-    ubl = ublox.UBlox("/dev/ttyACM0", baudrate=57600)
+    ubl = ublox.UBlox("/dev/ttyACM1", baudrate=57600)
 
     # ubl.set_debug(1)
     ubl.set_binary()
@@ -34,9 +34,9 @@ def main():
             msg = ubl.receive_message()
             if msg is None:
                 continue
-            elif msg.name() == "ESF-RAW":
+            elif msg.name() == "ESF_RAW":
                 dat_ESF.write(msg)
-            elif msg.name() == "dat_RXM":
+            elif msg.name() == "RXM_RAWX":
                 dat_RXM.write(msg)
 
             time.sleep(0.2)
