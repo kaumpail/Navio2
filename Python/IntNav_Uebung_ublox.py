@@ -8,7 +8,11 @@ import os
 def main():
 
     # initialize UBlox
-    ubl = ublox.UBlox("/dev/ttyACM2", baudrate=57600)
+    try:
+        ubl = ublox.UBlox("/dev/ttyACM1", baudrate=57600)
+    except FileNotFoundError:
+        ubl = ublox.UBlox("/dev/ttyACM0", baudrate=57600)
+
     # ubl.set_debug(1)
     ubl.set_binary()
     #  reset everything
