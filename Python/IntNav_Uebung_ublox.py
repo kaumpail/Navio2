@@ -31,7 +31,9 @@ def main():
 
         while True:
             msg = ubl.receive_message()
-            if msg.name() == "ESF-RAW":
+            if msg.type is None:
+                continue
+            elif msg.name() == "ESF-RAW":
                 dat_ESF.write(msg)
             elif msg.name() == "dat_RXM":
                 dat_RXM.write(msg)
