@@ -68,16 +68,16 @@ def main():
     # find new filename
     fileending = 1
     while True:
-        if os.path.isfile('meas_data/datafile_{}_IMU.txt'.format(fileending)) is True:
+        if os.path.isfile('/home/pi/Navio2/Python/meas_data/datafile_{}_IMU.txt'.format(fileending)) is True:
             fileending += 1
         else:
             break
 
     # open('', '', 1) enables line buffering
-    with open('meas_data/datafile_{}_IMU.txt'.format(fileending), 'w', 1) as dat_imu, \
-            open('meas_data/datafile_{}_GNSS_pos_lla.txt'.format(fileending), 'w', 1) as dat_gnss_pos_lla, \
-            open('meas_data/datafile_{}_GNSS_vel_ned.txt'.format(fileending), 'w', 1) as dat_gnss_vel_ned, \
-            open('meas_data/datafile_{}_baro.txt'.format(fileending), 'w', 1) as dat_baro:
+    with open('/home/pi/Navio2/Python/meas_data/datafile_{}_IMU.txt'.format(fileending), 'w', 1) as dat_imu, \
+            open('/home/pi/Navio2/Python/meas_data/datafile_{}_GNSS_pos_lla.txt'.format(fileending), 'w', 1) as dat_gnss_pos_lla, \
+            open('/home/pi/Navio2/Python/meas_data/datafile_{}_GNSS_vel_ned.txt'.format(fileending), 'w', 1) as dat_gnss_vel_ned, \
+            open('/home/pi/Navio2/Python/meas_data/datafile_{}_baro.txt'.format(fileending), 'w', 1) as dat_baro:
 
         # write headers to file
         dat_imu.write('t[s], mpu_accel_1, mpu_accel_2, mpu_accel_3, mpu_gyro_1, mpu_gyro_2, mpu_gyro_3, '
@@ -128,7 +128,7 @@ if __name__ == "__main__":
     led = Led()
     led.setColor('Green')
 
-    errfile = "errorfile.txt"
+    errfile = "/home/pi/Navio2/Python/errorfile.txt"
 
     with open(errfile, 'w', 1) as efile:
         try:
