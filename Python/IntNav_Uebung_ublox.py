@@ -24,12 +24,12 @@ def main():
     # find new filename
     fileending = 1
     while True:
-        if os.path.isfile('meas_data/datafile_{}_IMU.txt'.format(fileending)) is True:
+        if os.path.isfile('/home/pi/Navio2/Python/meas_data/datafile_{}_IMU.txt'.format(fileending)) is True:
             fileending += 1
 
     time.sleep(0.1)
-    with open('meas_data/datafile_{}_ESF-RAW.txt'.format(fileending), 'w', 1) as dat_ESF, \
-            open('meas_data/datafile_{}_RXM-RAW.txt'.format(fileending), 'w', 1) as dat_RXM:
+    with open('/home/pi/Navio2/Python/meas_data/datafile_{}_ESF-RAW.txt'.format(fileending), 'w', 1) as dat_ESF, \
+            open('/home/pi/Navio2/Python/meas_data/datafile_{}_RXM-RAW.txt'.format(fileending), 'w', 1) as dat_RXM:
 
         while True:
             msg = ubl.receive_message()
