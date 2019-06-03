@@ -137,4 +137,4 @@ if __name__ == "__main__":
             led.setColor('Yellow')
         except Exception as e:
             led.setColor('Red')
-            efile.write(e)
+            efile.write("Some error occured:\n{}".format(e))
