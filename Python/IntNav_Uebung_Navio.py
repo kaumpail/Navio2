@@ -67,8 +67,11 @@ def main():
 
     # find new filename
     fileending = 1
-    while os.path.isfile('meas_data/datafile_{}_IMU.txt'.format(fileending)) is True:
-        fileending += 1
+    while True:
+        if os.path.isfile('meas_data/datafile_{}_IMU.txt'.format(fileending)) is True:
+            fileending += 1
+        else:
+            break
 
     # open('', '', 1) enables line buffering
     with open('meas_data/datafile_{}_IMU.txt'.format(fileending), 'w', 1) as dat_imu, \
