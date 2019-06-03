@@ -548,7 +548,7 @@ msg_types = {
                                                   ['reserved1_0', 'reserved1_1', 'reserved1_2', 'reserved1_3'],
                                                   '_remaining',
                                                   '<II',
-                                                  ['dataType', 'sTtag']),
+                                                  ['data', 'sTtag']),
     (CLASS_RXM, MSG_RXM_RAWX)   : UBloxDescriptor('RXM_RAWX',
                                                   '<dHbBBBBB',
                                                   ['rcvTow', 'week', 'leapS', 'numMeas', 'recStat',

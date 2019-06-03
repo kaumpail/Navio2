@@ -66,7 +66,7 @@ def main():
     t_s = time.time()
 
     # find new filename
-    fileending=1
+    fileending = 1
     while os.path.isfile('meas_data/datafile_{}_IMU.txt'.format(fileending)) is True:
         fileending += 1
 
@@ -125,10 +125,13 @@ if __name__ == "__main__":
     led = Led()
     led.setColor('Green')
 
-    try:
-        main()
-    except KeyboardInterrupt:
-        led.setColor('Yellow')
-    except Exception as e:
-        led.setColor('Red')
-        print(e)
+    errfile = "errorfile.txt"
+
+    with open(errfile, 'w', 1) as efile:
+        try:
+            main()
+        except KeyboardInterrupt:
+            led.setColor('Yellow')
+        except Exception as e:
+            led.setColor('Red')
+            efile.write(e)
